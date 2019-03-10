@@ -205,9 +205,7 @@ type malformedLoginPacket struct{}
 
 func (malformedLoginPacket) Descriptor() message.Descriptor { return malformedLoginPacketDescriptor }
 
-func (malformedLoginPacket) Decode(b *buffer.ByteBuffer, length int) error {
-    return message.ErrDecodeNotSupported
-}
+func (malformedLoginPacket) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
 
 func (malformedLoginPacket) Encode(b *buffer.ByteBuffer) error { return nil }
 
@@ -239,9 +237,7 @@ type serviceUnavailable struct{}
 
 func (serviceUnavailable) Descriptor() message.Descriptor { return serviceUnavailableDescriptor }
 
-func (serviceUnavailable) Decode(b *buffer.ByteBuffer, length int) error {
-    return message.ErrDecodeNotSupported
-}
+func (serviceUnavailable) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
 
 func (serviceUnavailable) Encode(b *buffer.ByteBuffer) error { return nil }
 
