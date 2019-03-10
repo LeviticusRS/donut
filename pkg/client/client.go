@@ -11,8 +11,8 @@ import (
 )
 
 var (
-    ErrClientNotActive = errors.New("client: this operation could not be performed because the client is not active")
-    ErrClosed          = errors.New("client: this operation could not be performed because the client is closed")
+    ErrNotActive = errors.New("client: this operation could not be performed because the client is not active")
+    ErrClosed    = errors.New("client: this operation could not be performed because the client is closed")
 )
 
 // Creates a new client for the given connection and router.
@@ -361,7 +361,7 @@ func (c *Client) check() error {
         return nil
     }
 
-    return ErrClientNotActive
+    return ErrNotActive
 }
 
 // Spawns a go routine that will wait for the client to close and then call the given function.
