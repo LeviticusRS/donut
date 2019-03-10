@@ -5,10 +5,10 @@ var (
     chunkLength = 2048
 )
 
-type WorkerQueue chan JobQueue
+type WorkerPool chan JobQueue
 
 type Worker struct {
-    pool     WorkerQueue
+    pool     WorkerPool
     jobs     JobQueue
     provider ArchiveProvider
     buffer   [8]byte

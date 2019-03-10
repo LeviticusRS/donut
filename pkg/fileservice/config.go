@@ -26,7 +26,7 @@ func (cfg Config) Build() (*Service, error) {
         sessions:      make(map[uint64]*Session, cfg.Capacity),
         newSession:    cfg.SessionConfig.Build,
         clientVersion: cfg.SupportedVersion,
-        workers:       make(WorkerQueue, cfg.Workers),
+        workers:       make(WorkerPool, cfg.Workers),
         getArchive:    cfg.Provider,
     }, nil
 }

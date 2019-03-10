@@ -16,7 +16,7 @@ type Service struct {
     newSession    SessionFactory
     getArchive    ArchiveProvider
     commands      chan command
-    workers       WorkerQueue
+    workers       WorkerPool
     clientVersion uint32
 }
 

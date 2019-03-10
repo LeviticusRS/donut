@@ -5,14 +5,14 @@ import (
     "github.com/sprinkle-it/donut/pkg/client"
 )
 
-type SessionFactory func(*client.Client, WorkerQueue) *Session
+type SessionFactory func(*client.Client, WorkerPool) *Session
 
 type SessionConfig struct {
     PriorityRequestCapacity int
     PassiveRequestCapacity  int
 }
 
-func (cfg SessionConfig) Build(cli *client.Client, workers WorkerQueue) *Session {
+func (cfg SessionConfig) Build(cli *client.Client, workers WorkerPool) *Session {
     return &Session{
         Client:   cli,
         priority: make(chan Request, cfg.PassiveRequestCapacity),
@@ -34,7 +34,7 @@ type Session struct {
     // that are not critically needed at the present time but will be needed eventually.
     passive chan Request
 
-    workers WorkerQueue
+    workers WorkerPool
 
     done chan error
 }
