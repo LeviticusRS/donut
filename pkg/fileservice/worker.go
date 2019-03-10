@@ -7,8 +7,6 @@ var (
 
 type WorkerQueue chan JobQueue
 
-type JobQueue chan Job
-
 type Worker struct {
     pool     WorkerQueue
     jobs     JobQueue

@@ -5,6 +5,8 @@ import (
     "github.com/sprinkle-it/donut/pkg/client"
 )
 
+type JobQueue chan Job
+
 type Job struct {
     session *Session
     request Request
