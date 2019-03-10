@@ -13,7 +13,7 @@ func TestByteBuffer_GetCString(t *testing.T) {
 		_ = buffer.PutUint8(ExpectedStringValue[i])
 	}
 
-	buffer.PutUint8(NullTerminator)
+	_ = buffer.PutUint8(NullTerminator)
 	buffer.Offset = 0
 
 	readResult, err := buffer.GetCString()
