@@ -6,6 +6,7 @@ import (
     "encoding/binary"
     "fmt"
     "github.com/dsnet/compress/bzip2"
+    "github.com/sprinkle-it/donut/pkg/buffer"
     "io"
 )
 
@@ -76,9 +77,10 @@ func CompressArchive(compression Compression, b []byte) ([]byte, error) {
     switch compression {
     case Uncompressed:
         packed := make([]byte, UncompressedHeaderLength+len(b))
-        packed[0] = byte(compression)
-        binary.BigEndian.PutUint32(packed[1:], uint32(len(b)))
-        copy(packed[UncompressedHeaderLength:], b)
+        buf := buffer.ByteBuffer{Bytes:packed}
+        _ = buf.PutUint8(byte(compression))
+        _ = buf.PutUint32(uint32(len(b)))
+        _ = buf.PutBytes(b)
         return packed, nil
     default:
         // TODO

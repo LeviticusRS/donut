@@ -1,10 +1,5 @@
 package fileservice
 
-var (
-    endOfChunk  = []byte{255}
-    chunkLength = 2048
-)
-
 type WorkerPool chan JobQueue
 
 type Worker struct {

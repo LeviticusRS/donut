@@ -10,14 +10,25 @@ import (
 type ArchiveProvider func(uint8, uint16) ([]byte, error)
 
 type Service struct {
-    logger        *zap.Logger
-    capacity      int
-    sessions      map[uint64]*Session
-    newSession    SessionFactory
-    getArchive    ArchiveProvider
-    commands      chan command
-    workers       WorkerPool
-    clientVersion uint32
+    logger *zap.Logger
+
+    // The number of concurrent sessions the service can have up to. If a client attempts to connect to this service
+    // and the service is at capacity the service will reply with a status of Full and close the client.
+    capacity int
+
+    // The sessions that are currently active for this service.
+    sessions map[uint64]*Session
+
+    // Factory function to create new sessions.
+    newSession SessionFactory
+
+    // The client version that the service supports. If a client attempts to connect to this service with any other
+    // version then the service will reply with a status message of UnsupportedVersion and close the client.
+    version uint32
+
+    getArchive ArchiveProvider
+    commands   chan command
+    workers    WorkerPool
 }
 
 func New(config Config) (*Service, error) {
@@ -59,7 +70,7 @@ func (c handleMessage) execute(s *Service) {
     source := c.mail.Source
     switch msg := c.mail.Message.(type) {
     case *Handshake:
-        if msg.Version != s.clientVersion {
+        if msg.Version != s.version {
             _ = source.SendNow(status.UnsupportedVersion)
             return
         }
@@ -72,10 +83,7 @@ func (c handleMessage) execute(s *Service) {
         session := s.newSession(source, s.workers)
         s.sessions[source.Id()] = session
 
-        source.OnClosed(func(cli *client.Client) {
-            s.execute(unregisterSession{client: cli})
-        })
-
+        session.OnClosed(func(cli *client.Client) { s.execute(unregisterSession{cli: cli}) })
         session.Process()
 
         session.Info("Registered client to file service")
@@ -87,26 +95,22 @@ func (c handleMessage) execute(s *Service) {
             source.Fatal(errors.New("fileservice: received request from client that does not have active session"))
             return
         }
-        session.enqueue(msg.Request, session.passive)
+        session.EnqueuePassive(msg.Request)
     case *PriorityRequest:
         session, exists := s.sessions[source.Id()]
         if !exists {
             source.Fatal(errors.New("fileservice: received request from client that does not have active session"))
             return
         }
-        session.enqueue(msg.Request, session.priority)
+        session.EnqueuePriority(msg.Request)
     }
 }
 
 type unregisterSession struct {
-    client *client.Client
+    cli *client.Client
 }
 
 func (cmd unregisterSession) execute(service *Service) {
-    delete(service.sessions, cmd.client.Id())
-
-    service.logger.Info("Unregistered file session",
-        zap.Uint64("id", cmd.client.Id()),
-        zap.Stringer("address", cmd.client.RemoteAddress()),
-    )
+    delete(service.sessions, cmd.cli.Id())
+    cmd.cli.Info("Unregistered file session")
 }

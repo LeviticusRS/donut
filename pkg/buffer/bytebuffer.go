@@ -26,6 +26,14 @@ func (b *ByteBuffer) Skip(amount int) error {
     return nil
 }
 
+func (b *ByteBuffer) PutBytes(arr []byte) error {
+    if err := b.check(len(arr)); err != nil {
+        return err
+    }
+    copy(b.Bytes[b.Offset:], arr)
+    return nil
+}
+
 func (b *ByteBuffer) GetUint8() (uint8, error) {
     if err := b.check(1); err != nil {
         return 0, err

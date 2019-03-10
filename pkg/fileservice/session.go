@@ -15,15 +15,21 @@ type SessionConfig struct {
 func (cfg SessionConfig) Build(cli *client.Client, workers WorkerPool) *Session {
     return &Session{
         Client:   cli,
+        workers:  workers,
         priority: make(chan Request, cfg.PassiveRequestCapacity),
         passive:  make(chan Request, cfg.PassiveRequestCapacity),
-        workers:  workers,
         done:     make(chan error, 1),
     }
 }
 
+// A file service session serves files back to a client as it requests them. There are two types of requests a client
+// can make, priority requests and passive requests. Priority requests are expected to be served before passive
+// requests.
 type Session struct {
     *client.Client
+
+    // The pool of workers that the session can utilize to submit jobs.
+    workers WorkerPool
 
     // The queue of priority requests that the session has received. Priority requests are for archives that are
     // critically needed in order for the client to function and should be handled before passive requests.
@@ -33,23 +39,23 @@ type Session struct {
     // critically needed at the present time but will be needed eventually.
     passive chan Request
 
-    workers WorkerPool
-
+    // Channel used to signal when a job has been completed.
     done chan error
 }
 
 func (s *Session) Process() {
     go func() {
         for {
-            // First attempt to select from the priority requests so we can assure that the client is receiving files
-            // that it immediately needs. If the session has been closed just return.
+            // Attempt to select from the priority requests so we can assure that the client is receiving files that it
+            // immediately needs. If the session has been closed just return.
             select {
             case <-s.Quit():
                 return
             case request := <-s.priority:
-                s.submitRequest(request)
+                s.submit(request)
                 continue
             default:
+                // No priority requests currently.
             }
 
             // If there was no priority request take either a request from the passive or priority queue.
@@ -57,15 +63,36 @@ func (s *Session) Process() {
             case <-s.Quit():
                 return
             case request := <-s.priority:
-                s.submitRequest(request)
+                s.submit(request)
             case request := <-s.passive:
-                s.submitRequest(request)
+                s.submit(request)
             }
         }
     }()
 }
 
-func (s *Session) submitRequest(request Request) {
+// Enqueues a request to the priority queue.
+func (s *Session) EnqueuePriority(request Request) {
+    s.enqueue(request, s.priority)
+}
+
+// Enqueues a request to the passive queue.
+func (s *Session) EnqueuePassive(request Request) {
+    s.enqueue(request, s.passive)
+}
+
+// Enqueues a request to the provided channel. If the channel cannot immediately accept the request then the session
+// will be closed with a fatal error.
+func (s *Session) enqueue(request Request, queue chan Request) {
+    select {
+    case queue <- request:
+    default:
+        s.Fatal(errors.New("fileservice: request queue is full"))
+    }
+}
+
+// Submits a request to a worker.
+func (s *Session) submit(request Request) {
     select {
     case <-s.Quit():
         return
@@ -78,13 +105,5 @@ func (s *Session) submitRequest(request Request) {
                 s.Fatal(err)
             }
         }
-    }
-}
-
-func (s *Session) enqueue(request Request, queue chan Request) {
-    select {
-    case queue <- request:
-    default:
-        s.Fatal(errors.New("fileservice: request queue is full"))
     }
 }

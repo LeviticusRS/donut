@@ -126,10 +126,6 @@ func (c *Client) RemoteAddress() net.Addr {
     return c.connection.RemoteAddr()
 }
 
-func (c *Client) Quit() <-chan struct{} {
-    return c.quit
-}
-
 func (c *Client) Info(message string) {
     c.logger.Info(message, zap.Uint64("id", c.Id()), zap.Stringer("address", c.RemoteAddress()), )
 }
@@ -338,6 +334,10 @@ func (c *Client) Close() bool {
     _ = c.connection.Close()
 
     return true
+}
+
+func (c *Client) Quit() <-chan struct{} {
+    return c.quit
 }
 
 // Gets if the client is closed.

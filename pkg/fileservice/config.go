@@ -20,13 +20,13 @@ func (cfg Config) Build() (*Service, error) {
     }
 
     return &Service{
-        logger:        logger,
-        capacity:      cfg.Capacity,
-        commands:      make(chan command),
-        sessions:      make(map[uint64]*Session, cfg.Capacity),
-        newSession:    cfg.SessionConfig.Build,
-        clientVersion: cfg.SupportedVersion,
-        workers:       make(WorkerPool, cfg.Workers),
-        getArchive:    cfg.Provider,
+        logger:     logger,
+        capacity:   cfg.Capacity,
+        commands:   make(chan command),
+        sessions:   make(map[uint64]*Session, cfg.Capacity),
+        newSession: cfg.SessionConfig.Build,
+        version:    cfg.SupportedVersion,
+        workers:    make(WorkerPool, cfg.Workers),
+        getArchive: cfg.Provider,
     }, nil
 }
