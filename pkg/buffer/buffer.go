@@ -2,8 +2,8 @@ package buffer
 
 import "io"
 
-// Type declaration for readable buffers. Readable buffers must implement io.Reader and specify
-// how many readable bytes they have remaining.
+// Type declaration for readable buffers. Readable buffers must implement io.Reader and specify how many readable bytes
+// they have remaining.
 type Readable interface {
     io.Reader
     Readable() int

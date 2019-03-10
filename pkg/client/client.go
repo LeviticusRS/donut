@@ -32,9 +32,8 @@ func IncrementalGenerator(start uint64) IdentifierGenerator {
     return func() uint64 { counter++; return counter }
 }
 
-// Flush write automatically flushes bytes that are written to the client once the
-// byte counter reaches the output capacity. This implementation expects the clients
-// output buffer is empty when first being used.
+// Flush write automatically flushes bytes that are written to the client once the byte counter reaches the output
+// capacity. This implementation expects the clients output buffer is empty when first being used.
 type FlushWriter struct {
     *Client
     counter int
@@ -74,28 +73,28 @@ type Client struct {
 
     logger *zap.Logger
 
-    // All of the bytes read in from the connection will be written to this buffer. If the buffer
-    // cannot accept any more bytes it will cause the client to close.
+    // All of the bytes read in from the connection will be written to this buffer. If the buffer cannot accept any more
+    // bytes it will cause the client to close.
     input buffer.RingBuffer
 
-    // All of the bytes being written to the client will be first written to this buffer. This allows
-    // callers to have control over when bytes are flushed to the client.
+    // All of the bytes being written to the client will be first written to this buffer. This allows callers to have
+    // control over when bytes are flushed to the client.
     output buffer.RingBuffer
 
-    // Blocking channel for output commands. When an operation wants to interact with the output buffer and encoder
-    // a command needs to be published to this channel so that the operation can be executed synchronously.
+    // Blocking channel for output commands. When an operation wants to interact with the output buffer and encoder a
+    // command needs to be published to this channel so that the operation can be executed synchronously.
     outputCommands chan outputCommand
 
-    // Decodes byte streams into messages. Contains the state so that messages that have not been entirely
-    // transmitted can be decoded when the bytes are received.
+    // Decodes byte streams into messages. Contains the state so that messages that have not been entirely transmitted
+    // can be decoded when the bytes are received.
     decoder message.StreamDecoder
 
-    // Encodes byte streams into messages. Encoding is stateless but in the future it might become stateful
-    // when a cipher stream (ISAAC) is needed to encode the message id for secure transport.
+    // Encodes byte streams into messages. Encoding is stateless but in the future it might become stateful when a
+    // cipher stream is needed to encode the message id for secure transport.
     encoder message.StreamEncoder
 
-    // All of the received messages will be buffered to this channel. If this channel ever reaches its
-    // capacity the client will close and an error will be reported.
+    // All of the received messages will be buffered to this channel. If this channel ever reaches its capacity the
+    // client will close and an error will be reported.
     messages chan message.Message
 
     router MailRouter
@@ -117,8 +116,8 @@ type Client struct {
     quit chan struct{}
 }
 
-// Gets the client's identifier. This is assigned on creation and is guaranteed to be unique for the lifetime
-// of the client. This identifier can be used to map other information pertaining to a client.
+// Gets the client's identifier. This is assigned on creation and is guaranteed to be unique for the lifetime of the
+// client. This identifier can be used to map other information pertaining to a client.
 func (c *Client) Id() uint64 {
     return c.id
 }

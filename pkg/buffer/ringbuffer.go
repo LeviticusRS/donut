@@ -55,10 +55,10 @@ func (b *RingBuffer) Write(bytes []byte) (int, error) {
     n := min(len(bytes), b.Writable())
 
     if b.writePos+n > len(b.bytes) {
-        // First copy to the write position of the internal array the bytes at the start of the source buffer
+        // First copy to the write position of the internal array the bytes at the start of the source buffer.
         copy(b.bytes[b.writePos:], bytes[:len(b.bytes)-b.writePos])
 
-        // Lastly copy to the start of the internal array the remaining bytes after what we had just written
+        // Lastly copy to the start of the internal array the remaining bytes after what we had just written.
         copy(b.bytes[:n-len(b.bytes)+b.writePos], bytes[len(b.bytes)-b.writePos:])
     } else {
         // Copy the bytes to the write position

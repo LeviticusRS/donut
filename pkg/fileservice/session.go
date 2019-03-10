@@ -25,13 +25,12 @@ func (cfg SessionConfig) Build(cli *client.Client, workers WorkerPool) *Session 
 type Session struct {
     *client.Client
 
-    // The queue of priority requests that the session has received. Priority requests are for archives
-    // that are critically needed in order for the client to function and should be handled before
-    // passive requests.
+    // The queue of priority requests that the session has received. Priority requests are for archives that are
+    // critically needed in order for the client to function and should be handled before passive requests.
     priority chan Request
 
-    // The queue of passive requests that the session has received. Passive requests are for archives
-    // that are not critically needed at the present time but will be needed eventually.
+    // The queue of passive requests that the session has received. Passive requests are for archives that are not
+    // critically needed at the present time but will be needed eventually.
     passive chan Request
 
     workers WorkerPool

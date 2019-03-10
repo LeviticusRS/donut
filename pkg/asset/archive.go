@@ -81,12 +81,13 @@ func CompressArchive(compression Compression, b []byte) ([]byte, error) {
         copy(packed[UncompressedHeaderLength:], b)
         return packed, nil
     default:
+        // TODO
         return nil, fmt.Errorf("asset: unsupported compression %d", compression)
     }
 }
 
-// Trims an archive of any extra bytes. For example the client appends two extra bytes at the end of an archive
-// in the cache to store the version.
+// Trims an archive of any extra bytes. For example the client appends two extra bytes at the end of an archive in the
+// cache to store the version.
 func TrimArchive(b []byte) ([]byte, error) {
     compression := Compression(b[0])
     length := binary.BigEndian.Uint32(b[1:])

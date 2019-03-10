@@ -54,8 +54,8 @@ func (s *Storage) retrieve(index uint8, id uint16) ([]byte, error) {
         return nil, err
     }
 
-    // Trimming the archive fixes an issue with caches containing a footer which is used to hold to archive's version
-    // to compare against the manifest.
+    // Trimming the archive fixes an issue with caches containing a footer which is used to hold to archive's version to
+    // compare against the manifest.
     b, err = TrimArchive(b)
     if err != nil {
         return nil, err

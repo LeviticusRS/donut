@@ -6,9 +6,9 @@ import (
     "hash/crc32"
 )
 
-// Creates the release manifest for a cache. The release manifest contains the checksum and version of each
-// index manifest contained within the cache. This is used so that the client can verify if the cache it
-// has locally is the same version as the one being distributed.
+// Creates the release manifest for a cache. The release manifest contains the checksum and version of each index
+// manifest contained within the cache. This is used so that the client can verify if the cache it has locally is the
+// same version as the one being distributed.
 func CreateReleaseManifest(cache *Cache) ([]byte, error) {
     manifest := buffer.NewByteBuffer(cache.IndexCount() * 8)
     for i := 0; i < cache.IndexCount(); i++ {
