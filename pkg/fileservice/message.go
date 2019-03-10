@@ -8,8 +8,8 @@ import (
 var (
     PassiveRequestDescriptor      = message.Descriptor{Id: 0, Size: 3, Provider: newPassiveRequest,}
     PriorityRequestDescriptor     = message.Descriptor{Id: 1, Size: 3, Provider: newPriorityRequest,}
-    OnlineStatusUpdateDescriptor  = message.Descriptor{Id: 2, Size: 3, Provider: message.Provide(OnlineStatusUpdate),}
-    OfflineStatusUpdateDescriptor = message.Descriptor{Id: 3, Size: 3, Provider: message.Provide(OfflineStatusUpdate),}
+    OnlineStatusUpdateDescriptor  = message.Descriptor{Id: 2, Size: 3, Provider: message.ProvideSingleton(OnlineStatusUpdate),}
+    OfflineStatusUpdateDescriptor = message.Descriptor{Id: 3, Size: 3, Provider: message.ProvideSingleton(OfflineStatusUpdate),}
     HandshakeDescriptor           = message.Descriptor{Id: 15, Size: 4, Provider: newHandshake,}
 )
 

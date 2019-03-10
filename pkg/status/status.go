@@ -9,55 +9,55 @@ var (
     okayDescriptor = message.Descriptor{
         Id:       0,
         Size:     0,
-        Provider: message.Provide(Okay),
+        Provider: message.ProvideSingleton(Okay),
     }
 
     invalidCredentialsDescriptor = message.Descriptor{
         Id:       3,
         Size:     0,
-        Provider: message.Provide(InvalidCredentials),
+        Provider: message.ProvideSingleton(InvalidCredentials),
     }
 
     accountDisabledDescriptor = message.Descriptor{
         Id:       4,
         Size:     0,
-        Provider: message.Provide(AccountDisabled),
+        Provider: message.ProvideSingleton(AccountDisabled),
     }
 
     alreadyLoggedInDescriptor = message.Descriptor{
         Id:       5,
         Size:     0,
-        Provider: message.Provide(AlreadyLoggedIn),
+        Provider: message.ProvideSingleton(AlreadyLoggedIn),
     }
 
     unsupportedVersionDescriptor = message.Descriptor{
         Id:       6,
         Size:     0,
-        Provider: message.Provide(UnsupportedVersion),
+        Provider: message.ProvideSingleton(UnsupportedVersion),
     }
 
     fullDescriptor = message.Descriptor{
         Id:       7,
         Size:     0,
-        Provider: message.Provide(Full),
+        Provider: message.ProvideSingleton(Full),
     }
 
     loginLimitExceededDescriptor = message.Descriptor{
         Id:       9,
         Size:     0,
-        Provider: message.Provide(LoginLimitExceeded),
+        Provider: message.ProvideSingleton(LoginLimitExceeded),
     }
 
     serverBeingUpdatedDescriptor = message.Descriptor{
         Id:       14,
         Size:     0,
-        Provider: message.Provide(ServerBeingUpdated),
+        Provider: message.ProvideSingleton(ServerBeingUpdated),
     }
 
     worldRunningClosedBetaDescriptor = message.Descriptor{
         Id:       19,
         Size:     0,
-        Provider: message.Provide(WorldRunningClosedBeta),
+        Provider: message.ProvideSingleton(WorldRunningClosedBeta),
     }
 
     profileTransferDescriptor = message.Descriptor{
@@ -69,25 +69,25 @@ var (
     malformedLoginPacketDescriptor = message.Descriptor{
         Id:       22,
         Size:     0,
-        Provider: message.Provide(MalformedLoginPacket),
+        Provider: message.ProvideSingleton(MalformedLoginPacket),
     }
 
     errorLoadingProfileDescriptor = message.Descriptor{
         Id:       24,
         Size:     0,
-        Provider: message.Provide(ErrorLoadingProfile),
+        Provider: message.ProvideSingleton(ErrorLoadingProfile),
     }
 
     blockedComputerAddressDescriptor = message.Descriptor{
         Id:       26,
         Size:     0,
-        Provider: message.Provide(BlockedComputerAddress),
+        Provider: message.ProvideSingleton(BlockedComputerAddress),
     }
 
     serviceUnavailableDescriptor = message.Descriptor{
         Id:       27,
         Size:     0,
-        Provider: message.Provide(ServiceUnavailable),
+        Provider: message.ProvideSingleton(ServiceUnavailable),
     }
 
     customRejectionDescriptor = message.Descriptor{
@@ -99,13 +99,13 @@ var (
     enterSixDigitDescriptor = message.Descriptor{
         Id:       56,
         Size:     0,
-        Provider: message.Provide(EnterSixDigitPinCode),
+        Provider: message.ProvideSingleton(EnterSixDigitPinCode),
     }
 
     invalidSixDigitPinCodeDescriptor = message.Descriptor{
         Id:       57,
         Size:     0,
-        Provider: message.Provide(InvalidSixDigitPinCode),
+        Provider: message.ProvideSingleton(InvalidSixDigitPinCode),
     }
 
     Okay                   = okay{}

@@ -17,8 +17,8 @@ type DescriptorSet map[uint8]Descriptor
 // already created to be reused or create new messages.
 type Provider func() Message
 
-// Creates a new provider that reuses the same message as the only value the provider will ever return.
-func Provide(msg Message) Provider { return func() Message { return msg} }
+// Creates a new provider that provides a singleton value.
+func ProvideSingleton(msg Message) Provider { return func() Message { return msg } }
 
 type Message interface {
     // Gets the descriptor which specifies the id, size, and factory for creating new messages of this type.
