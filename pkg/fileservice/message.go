@@ -6,20 +6,42 @@ import (
 )
 
 var (
-    PassiveRequestDescriptor      = message.Descriptor{Id: 0, Size: 3, Provider: newPassiveRequest,}
-    PriorityRequestDescriptor     = message.Descriptor{Id: 1, Size: 3, Provider: newPriorityRequest,}
-    OnlineStatusUpdateDescriptor  = message.Descriptor{Id: 2, Size: 3, Provider: message.ProvideSingleton(OnlineStatusUpdate),}
-    OfflineStatusUpdateDescriptor = message.Descriptor{Id: 3, Size: 3, Provider: message.ProvideSingleton(OfflineStatusUpdate),}
-    HandshakeDescriptor           = message.Descriptor{Id: 15, Size: 4, Provider: newHandshake,}
+    PassiveRequestDescriptor = message.Config{
+        Id:   0,
+        Size: 3,
+        New:  func() message.Message { return &PassiveRequest{} },
+    }
+
+    PriorityRequestDescriptor = message.Config{
+        Id:   1,
+        Size: 3,
+        New:  func() message.Message { return &PriorityRequest{} },
+    }
+
+    OnlineStatusUpdateDescriptor = message.Config{
+        Id:   2,
+        Size: 3,
+        New:  message.Singleton(OnlineStatusUpdate),
+    }
+
+    OfflineStatusUpdateDescriptor = message.Config{
+        Id:   3,
+        Size: 3,
+        New:  message.Singleton(OfflineStatusUpdate),
+    }
+
+    HandshakeDescriptor = message.Config{
+        Id:   15,
+        Size: 4,
+        New:  func() message.Message { return &Handshake{} },
+    }
 )
 
 type Handshake struct {
     Version uint32
 }
 
-func newHandshake() message.Message { return &Handshake{} }
-
-func (Handshake) Descriptor() message.Descriptor { return HandshakeDescriptor }
+func (Handshake) Config() message.Config { return HandshakeDescriptor }
 
 func (h *Handshake) Decode(buf *buffer.ByteBuffer, length int) error {
     var err error
@@ -28,8 +50,6 @@ func (h *Handshake) Decode(buf *buffer.ByteBuffer, length int) error {
     }
     return nil
 }
-
-func (Handshake) Encode(*buffer.ByteBuffer) error { return message.ErrEncodeNotSupported }
 
 type Request struct {
     Index uint8
@@ -40,7 +60,7 @@ type PassiveRequest struct{ Request }
 
 func newPassiveRequest() message.Message { return &PassiveRequest{} }
 
-func (r PassiveRequest) Descriptor() message.Descriptor {
+func (r PassiveRequest) Config() message.Config {
     return PassiveRequestDescriptor
 }
 
@@ -62,9 +82,7 @@ func (PassiveRequest) Encode(*buffer.ByteBuffer) error { return message.ErrEncod
 
 type PriorityRequest struct{ Request }
 
-func newPriorityRequest() message.Message { return &PriorityRequest{} }
-
-func (r PriorityRequest) Descriptor() message.Descriptor {
+func (r PriorityRequest) Config() message.Config {
     return PriorityRequestDescriptor
 }
 
@@ -88,20 +106,16 @@ var OnlineStatusUpdate = onlineStatusUpdate{}
 
 type onlineStatusUpdate struct{}
 
-func (s onlineStatusUpdate) Descriptor() message.Descriptor { return OnlineStatusUpdateDescriptor }
+func (s onlineStatusUpdate) Config() message.Config { return OnlineStatusUpdateDescriptor }
 
 func (onlineStatusUpdate) Decode(buf *buffer.ByteBuffer, length int) error {
     return nil
 }
 
-func (onlineStatusUpdate) Encode(*buffer.ByteBuffer) error { return message.ErrEncodeNotSupported }
-
 var OfflineStatusUpdate = offlineStatusUpdate{}
 
 type offlineStatusUpdate struct{}
 
-func (offlineStatusUpdate) Descriptor() message.Descriptor { return OfflineStatusUpdateDescriptor }
+func (offlineStatusUpdate) Config() message.Config { return OfflineStatusUpdateDescriptor }
 
 func (offlineStatusUpdate) Decode(buf *buffer.ByteBuffer, length int) error { return nil }
-
-func (offlineStatusUpdate) Encode(*buffer.ByteBuffer) error { return message.ErrEncodeNotSupported }

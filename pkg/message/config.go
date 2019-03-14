@@ -18,15 +18,8 @@ func (s Size) EncodedLength() int {
     }
 }
 
-func StaticSize(size int) Size {
-    if size < 0 {
-        panic("Size must be greater than or equal to zero")
-    }
-    return Size(size)
-}
-
-type Descriptor struct {
-    Id       uint8
-    Size     Size
-    Provider Provider
+type Config struct {
+    Id   uint8
+    Size Size
+    New  func() Message
 }

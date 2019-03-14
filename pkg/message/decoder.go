@@ -14,18 +14,18 @@ const (
 )
 
 type StreamDecoder struct {
-    messages        DescriptorSet
-    receivedMessage Descriptor
-    receivedLength  int
-    state           StreamDecoderState
-    buffer          []byte
+    configs        map[uint8]Config
+    messageConfig  Config
+    receivedLength int
+    state          StreamDecoderState
+    buffer         []byte
 }
 
-func NewStreamDecoder(messages DescriptorSet, capacity int) StreamDecoder {
+func NewStreamDecoder(configs map[uint8]Config, capacity int) StreamDecoder {
     return StreamDecoder{
-        messages: messages,
-        state:    DecodeIdentifier,
-        buffer:   make([]byte, capacity),
+        configs: configs,
+        state:   DecodeIdentifier,
+        buffer:  make([]byte, capacity),
     }
 }
 
@@ -42,16 +42,16 @@ func (d *StreamDecoder) Decode(r buffer.Readable) (Message, error) {
 
         id := d.buffer[0]
 
-        config, ok := d.messages[id]
+        config, ok := d.configs[id]
         if !ok {
             return nil, fmt.Errorf("message: unrecognized message %d", id)
         }
 
         d.state = DecodeLength
-        d.receivedMessage = config
+        d.messageConfig = config
         fallthrough
     case DecodeLength:
-        switch d.receivedMessage.Size {
+        switch d.messageConfig.Size {
         case SizeVariableByte:
             if !buffer.IsReadable(r, 1) {
                 return nil, nil
@@ -73,7 +73,7 @@ func (d *StreamDecoder) Decode(r buffer.Readable) (Message, error) {
 
             d.receivedLength = int(uint16(d.buffer[0])<<8 | uint16(d.buffer[1]))
         default:
-            d.receivedLength = int(d.receivedMessage.Size)
+            d.receivedLength = int(d.messageConfig.Size)
         }
 
         d.state = AwaitBytes
@@ -87,7 +87,7 @@ func (d *StreamDecoder) Decode(r buffer.Readable) (Message, error) {
             return nil, err
         }
 
-        msg := New(d.receivedMessage)
+        msg := d.messageConfig.New().(Inbound)
         buf := buffer.ByteBuffer{Bytes:d.buffer[:d.receivedLength]}
 
         if err := msg.Decode(&buf, d.receivedLength); err != nil {

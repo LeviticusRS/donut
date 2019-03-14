@@ -56,7 +56,7 @@ func main() {
         Receivers: []client.MailReceiver{
             {
                 Handler: service.HandleMail,
-                Accept: []message.Descriptor{
+                Accept: []message.Config{
                     fileservice.PassiveRequestDescriptor,
                     fileservice.PriorityRequestDescriptor,
                     fileservice.OnlineStatusUpdateDescriptor,

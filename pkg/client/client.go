@@ -60,7 +60,7 @@ type writeBytes struct {
 
 // Writes a message to the output buffer.
 type writeMessage struct {
-    msg message.Message
+    out message.Outbound
 }
 
 // Flushes the bytes from the output buffer to the connection.
@@ -141,22 +141,22 @@ func (c *Client) Write(b []byte) error {
 }
 
 // Writes a message to the output buffer.
-func (c *Client) Send(msg message.Message) error {
+func (c *Client) Send(msg message.Outbound) error {
     if err := c.check(); err != nil {
         return err
     }
 
-    c.outputCommands <- writeMessage{msg: msg}
+    c.outputCommands <- writeMessage{out: msg}
     return nil
 }
 
 // Writes a message to the output buffer and flushes afterward.
-func (c *Client) SendNow(msg message.Message) error {
+func (c *Client) SendNow(msg message.Outbound) error {
     if err := c.check(); err != nil {
         return err
     }
 
-    c.outputCommands <- writeMessage{msg: msg}
+    c.outputCommands <- writeMessage{out: msg}
     c.outputCommands <- flushBytes{}
     return nil
 }
@@ -256,7 +256,7 @@ func (c *Client) processOutput() {
                         return
                     }
                 case writeMessage:
-                    if err := c.encoder.Encode(cmd.msg, &c.output); err != nil {
+                    if err := c.encoder.Encode(cmd.out, &c.output); err != nil {
                         c.Fatal(err)
                         return
                     }

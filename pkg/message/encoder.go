@@ -10,10 +10,10 @@ func NewStreamEncoder(capacity int) StreamEncoder {
     return StreamEncoder{buffer: make([]byte, capacity)}
 }
 
-func (e *StreamEncoder) Encode(msg Message, output *buffer.RingBuffer) error {
+func (e *StreamEncoder) Encode(msg Outbound, output *buffer.RingBuffer) error {
     buf := buffer.ByteBuffer{Bytes:e.buffer}
 
-    if err := buf.PutUint8(uint8(msg.Descriptor().Id)); err != nil {
+    if err := buf.PutUint8(uint8(msg.Config().Id)); err != nil {
         return err
     }
 
@@ -22,7 +22,7 @@ func (e *StreamEncoder) Encode(msg Message, output *buffer.RingBuffer) error {
 
     // Skip over where we need to write the length of the packet. The number of bytes that dictate the length
     // is determined by the size of the packet.
-    size := msg.Descriptor().Size
+    size := msg.Config().Size
     if err := buf.Skip(size.EncodedLength()); err != nil {
         return err
     }

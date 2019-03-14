@@ -12,7 +12,7 @@ type MailHandler func(Mail)
 // A receiver is a wrapper to declare which messages a handler accepts.
 type MailReceiver struct {
     Handler MailHandler
-    Accept  []message.Descriptor
+    Accept  []message.Config
 }
 
 // Note(hadyn): The reason why messages and handlers are one to one are because if there are multiple receivers for a
@@ -23,13 +23,13 @@ type MailReceiver struct {
 // publish job. This has similar issues with locking out workers and in my opinion seems to be extraneous.
 type MailRouter struct {
     handlers map[uint8]MailHandler
-    accepted message.DescriptorSet
+    accepted map[uint8]message.Config
 }
 
 func NewMailRouter(receivers []MailReceiver) (MailRouter, error) {
     router := MailRouter{
         handlers: make(map[uint8]MailHandler),
-        accepted: make(message.DescriptorSet),
+        accepted: make(map[uint8]message.Config),
     }
 
     for _, receiver := range receivers {
@@ -46,7 +46,7 @@ func NewMailRouter(receivers []MailReceiver) (MailRouter, error) {
 }
 
 func (r MailRouter) Publish(source *Client, msg message.Message) {
-    if handler, ok := r.handlers[msg.Descriptor().Id]; ok {
+    if handler, ok := r.handlers[msg.Config().Id]; ok {
         handler(Mail{Source: source, Message: msg})
     }
 }

@@ -6,238 +6,208 @@ import (
 )
 
 var (
-    okayDescriptor = message.Descriptor{
-        Id:       0,
-        Size:     0,
-        Provider: message.ProvideSingleton(Okay),
+    okayConfig = message.Config{
+        Id:   0,
+        Size: 0,
+        New:  message.Singleton(Okay),
     }
 
-    invalidCredentialsDescriptor = message.Descriptor{
-        Id:       3,
-        Size:     0,
-        Provider: message.ProvideSingleton(InvalidCredentials),
+    invalidCredentialsConfig = message.Config{
+        Id:   3,
+        Size: 0,
+        New:  message.Singleton(InvalidCredentials),
     }
 
-    accountDisabledDescriptor = message.Descriptor{
-        Id:       4,
-        Size:     0,
-        Provider: message.ProvideSingleton(AccountDisabled),
+    accountDisabledConfig = message.Config{
+        Id:   4,
+        Size: 0,
+        New:  message.Singleton(AccountDisabled),
     }
 
-    alreadyLoggedInDescriptor = message.Descriptor{
-        Id:       5,
-        Size:     0,
-        Provider: message.ProvideSingleton(AlreadyLoggedIn),
+    alreadyOnlineConfig = message.Config{
+        Id:   5,
+        Size: 0,
+        New:  message.Singleton(AlreadyOnline),
     }
 
-    unsupportedVersionDescriptor = message.Descriptor{
-        Id:       6,
-        Size:     0,
-        Provider: message.ProvideSingleton(UnsupportedVersion),
+    unsupportedVersionConfig = message.Config{
+        Id:   6,
+        Size: 0,
+        New:  message.Singleton(UnsupportedVersion),
     }
 
-    fullDescriptor = message.Descriptor{
-        Id:       7,
-        Size:     0,
-        Provider: message.ProvideSingleton(Full),
+    fullConfig = message.Config{
+        Id:   7,
+        Size: 0,
+        New:  message.Singleton(Full),
     }
 
-    loginLimitExceededDescriptor = message.Descriptor{
-        Id:       9,
-        Size:     0,
-        Provider: message.ProvideSingleton(LoginLimitExceeded),
+    loginLimitExceededConfig = message.Config{
+        Id:   9,
+        Size: 0,
+        New:  message.Singleton(LoginLimitExceeded),
     }
 
-    serverBeingUpdatedDescriptor = message.Descriptor{
-        Id:       14,
-        Size:     0,
-        Provider: message.ProvideSingleton(ServerBeingUpdated),
+    serverUpdateConfig = message.Config{
+        Id:   14,
+        Size: 0,
+        New:  message.Singleton(ServerUpdate),
     }
 
-    worldRunningClosedBetaDescriptor = message.Descriptor{
-        Id:       19,
-        Size:     0,
-        Provider: message.ProvideSingleton(WorldRunningClosedBeta),
+    closedBetaConfig = message.Config{
+        Id:   19,
+        Size: 0,
+        New:  message.Singleton(ClosedBeta),
     }
 
-    profileTransferDescriptor = message.Descriptor{
-        Id:       21,
-        Size:     1,
-        Provider: newProfileTransfer,
+    profileTransferConfig = message.Config{
+        Id:   21,
+        Size: 1,
+        New:  func() message.Message { return &ProfileTransfer{} },
     }
 
-    malformedLoginPacketDescriptor = message.Descriptor{
-        Id:       22,
-        Size:     0,
-        Provider: message.ProvideSingleton(MalformedLoginPacket),
+    malformedLoginPacketConfig = message.Config{
+        Id:   22,
+        Size: 0,
+        New:  message.Singleton(MalformedLoginPacket),
     }
 
-    errorLoadingProfileDescriptor = message.Descriptor{
-        Id:       24,
-        Size:     0,
-        Provider: message.ProvideSingleton(ErrorLoadingProfile),
+    errorLoadingProfileConfig = message.Config{
+        Id:   24,
+        Size: 0,
+        New:  message.Singleton(ErrorLoadingProfile),
     }
 
-    blockedComputerAddressDescriptor = message.Descriptor{
-        Id:       26,
-        Size:     0,
-        Provider: message.ProvideSingleton(BlockedComputerAddress),
+    blockedAddressConfig = message.Config{
+        Id:   26,
+        Size: 0,
+        New:  message.Singleton(BlockedAddress),
     }
 
-    serviceUnavailableDescriptor = message.Descriptor{
-        Id:       27,
-        Size:     0,
-        Provider: message.ProvideSingleton(ServiceUnavailable),
+    serviceUnavailableConfig = message.Config{
+        Id:   27,
+        Size: 0,
+        New:  message.Singleton(ServiceUnavailable),
     }
 
-    customRejectionDescriptor = message.Descriptor{
-        Id:       29,
-        Size:     message.SizeVariableShort,
-        Provider: newCustomRejection,
+    customRejectionConfig = message.Config{
+        Id:   29,
+        Size: message.SizeVariableShort,
+        New:  func() message.Message { return &CustomRejection{} },
     }
 
-    enterSixDigitDescriptor = message.Descriptor{
-        Id:       56,
-        Size:     0,
-        Provider: message.ProvideSingleton(EnterSixDigitPinCode),
+    enterPinConfig = message.Config{
+        Id:   56,
+        Size: 0,
+        New:  message.Singleton(EnterPin),
     }
 
-    invalidSixDigitPinCodeDescriptor = message.Descriptor{
-        Id:       57,
-        Size:     0,
-        Provider: message.ProvideSingleton(InvalidSixDigitPinCode),
+    invalidPinConfig = message.Config{
+        Id:   57,
+        Size: 0,
+        New:  message.Singleton(InvalidPin),
     }
 
-    Okay                   = okay{}
-    InvalidCredentials     = invalidCredentials{}
-    AccountDisabled        = accountDisabled{}
-    AlreadyLoggedIn        = alreadyLoggedIn{}
-    UnsupportedVersion     = unsupportedVersion{}
-    Full                   = full{}
-    LoginLimitExceeded     = loginLimitExceeded{}
-    ServerBeingUpdated     = serverBeingUpdated{}
-    WorldRunningClosedBeta = worldRunningClosedBeta{}
-    MalformedLoginPacket   = malformedLoginPacket{}
-    ErrorLoadingProfile    = errorLoadingProfile{}
-    BlockedComputerAddress = blockedComputerAddress{}
-    ServiceUnavailable     = serviceUnavailable{}
-    EnterSixDigitPinCode   = enterSixDigitPinCode{}
-    InvalidSixDigitPinCode = invalidSixDigitPinCode{}
+    Okay                 = okay{}
+    InvalidCredentials   = invalidCredentials{}
+    AccountDisabled      = accountDisabled{}
+    AlreadyOnline        = alreadyOnline{}
+    UnsupportedVersion   = unsupportedVersion{}
+    Full                 = full{}
+    LoginLimitExceeded   = loginLimitExceeded{}
+    ServerUpdate         = serverUpdate{}
+    ClosedBeta           = closedBeta{}
+    MalformedLoginPacket = malformedLoginPacket{}
+    ErrorLoadingProfile  = errorLoadingProfile{}
+    BlockedAddress       = blockedAddress{}
+    ServiceUnavailable   = serviceUnavailable{}
+    EnterPin             = enterPin{}
+    InvalidPin           = invalidPin{}
 )
 
 type okay struct{}
 
-func (okay) Descriptor() message.Descriptor { return okayDescriptor }
-
-func (okay) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (okay) Config() message.Config { return okayConfig }
 
 func (okay) Encode(b *buffer.ByteBuffer) error { return nil }
 
 type unsupportedVersion struct{}
 
-func (unsupportedVersion) Descriptor() message.Descriptor { return unsupportedVersionDescriptor }
-
-func (unsupportedVersion) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (unsupportedVersion) Config() message.Config { return unsupportedVersionConfig }
 
 func (unsupportedVersion) Encode(b *buffer.ByteBuffer) error { return nil }
 
 type full struct{}
 
-func (full) Descriptor() message.Descriptor { return fullDescriptor }
-
-func (full) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (full) Config() message.Config { return fullConfig }
 
 func (full) Encode(b *buffer.ByteBuffer) error { return nil }
 
 type invalidCredentials struct{}
 
-func (invalidCredentials) Descriptor() message.Descriptor { return invalidCredentialsDescriptor }
-
-func (invalidCredentials) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (invalidCredentials) Config() message.Config { return invalidCredentialsConfig }
 
 func (invalidCredentials) Encode(b *buffer.ByteBuffer) error { return nil }
 
 type accountDisabled struct{}
 
-func (accountDisabled) Descriptor() message.Descriptor { return accountDisabledDescriptor }
-
-func (accountDisabled) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (accountDisabled) Config() message.Config { return accountDisabledConfig }
 
 func (accountDisabled) Encode(b *buffer.ByteBuffer) error { return nil }
 
-type alreadyLoggedIn struct{}
+type alreadyOnline struct{}
 
-func (alreadyLoggedIn) Descriptor() message.Descriptor { return alreadyLoggedInDescriptor }
+func (alreadyOnline) Config() message.Config { return alreadyOnlineConfig }
 
-func (alreadyLoggedIn) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
-
-func (alreadyLoggedIn) Encode(b *buffer.ByteBuffer) error { return nil }
+func (alreadyOnline) Encode(b *buffer.ByteBuffer) error { return nil }
 
 type loginLimitExceeded struct{}
 
-func (loginLimitExceeded) Descriptor() message.Descriptor { return loginLimitExceededDescriptor }
-
-func (loginLimitExceeded) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (loginLimitExceeded) Config() message.Config { return loginLimitExceededConfig }
 
 func (loginLimitExceeded) Encode(b *buffer.ByteBuffer) error { return nil }
 
-type serverBeingUpdated struct{}
+type serverUpdate struct{}
 
-func (serverBeingUpdated) Descriptor() message.Descriptor { return serverBeingUpdatedDescriptor }
+func (serverUpdate) Config() message.Config { return serverUpdateConfig }
 
-func (serverBeingUpdated) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
-
-func (serverBeingUpdated) Encode(b *buffer.ByteBuffer) error { return nil }
+func (serverUpdate) Encode(b *buffer.ByteBuffer) error { return nil }
 
 type ProfileTransfer struct {
     Delay uint8
 }
 
-func newProfileTransfer() message.Message { return &ProfileTransfer{} }
-
-func (ProfileTransfer) Descriptor() message.Descriptor { return profileTransferDescriptor }
-
-func (ProfileTransfer) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (ProfileTransfer) Config() message.Config { return profileTransferConfig }
 
 func (msg ProfileTransfer) Encode(b *buffer.ByteBuffer) error { return b.PutUint8(msg.Delay) }
 
 type malformedLoginPacket struct{}
 
-func (malformedLoginPacket) Descriptor() message.Descriptor { return malformedLoginPacketDescriptor }
-
-func (malformedLoginPacket) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (malformedLoginPacket) Config() message.Config { return malformedLoginPacketConfig }
 
 func (malformedLoginPacket) Encode(b *buffer.ByteBuffer) error { return nil }
 
-type worldRunningClosedBeta struct{}
+type closedBeta struct{}
 
-func (worldRunningClosedBeta) Descriptor() message.Descriptor { return worldRunningClosedBetaDescriptor }
+func (closedBeta) Config() message.Config { return closedBetaConfig }
 
-func (worldRunningClosedBeta) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
-
-func (worldRunningClosedBeta) Encode(b *buffer.ByteBuffer) error { return nil }
+func (closedBeta) Encode(b *buffer.ByteBuffer) error { return nil }
 
 type errorLoadingProfile struct{}
 
-func (errorLoadingProfile) Descriptor() message.Descriptor { return errorLoadingProfileDescriptor }
-
-func (errorLoadingProfile) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (errorLoadingProfile) Config() message.Config { return errorLoadingProfileConfig }
 
 func (errorLoadingProfile) Encode(b *buffer.ByteBuffer) error { return nil }
 
-type blockedComputerAddress struct{}
+type blockedAddress struct{}
 
-func (blockedComputerAddress) Descriptor() message.Descriptor { return blockedComputerAddressDescriptor }
+func (blockedAddress) Config() message.Config { return blockedAddressConfig }
 
-func (blockedComputerAddress) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
-
-func (blockedComputerAddress) Encode(b *buffer.ByteBuffer) error { return nil }
+func (blockedAddress) Encode(b *buffer.ByteBuffer) error { return nil }
 
 type serviceUnavailable struct{}
 
-func (serviceUnavailable) Descriptor() message.Descriptor { return serviceUnavailableDescriptor }
-
-func (serviceUnavailable) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (serviceUnavailable) Config() message.Config { return serviceUnavailableConfig }
 
 func (serviceUnavailable) Encode(b *buffer.ByteBuffer) error { return nil }
 
@@ -247,11 +217,7 @@ type CustomRejection struct {
     BottomLabel string
 }
 
-func newCustomRejection() message.Message { return &CustomRejection{} }
-
-func (CustomRejection) Descriptor() message.Descriptor { return customRejectionDescriptor }
-
-func (CustomRejection) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (CustomRejection) Config() message.Config { return customRejectionConfig }
 
 func (msg CustomRejection) Encode(b *buffer.ByteBuffer) error {
     if err := b.PutCString(msg.TopLabel); err != nil {
@@ -269,18 +235,14 @@ func (msg CustomRejection) Encode(b *buffer.ByteBuffer) error {
     return nil
 }
 
-type enterSixDigitPinCode struct{}
+type enterPin struct{}
 
-func (enterSixDigitPinCode) Descriptor() message.Descriptor { return enterSixDigitDescriptor }
+func (enterPin) Config() message.Config { return enterPinConfig }
 
-func (enterSixDigitPinCode) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
+func (enterPin) Encode(b *buffer.ByteBuffer) error { return nil }
 
-func (enterSixDigitPinCode) Encode(b *buffer.ByteBuffer) error { return nil }
+type invalidPin struct{}
 
-type invalidSixDigitPinCode struct{}
+func (invalidPin) Config() message.Config { return invalidPinConfig }
 
-func (invalidSixDigitPinCode) Descriptor() message.Descriptor { return invalidSixDigitPinCodeDescriptor }
-
-func (invalidSixDigitPinCode) Decode(b *buffer.ByteBuffer, length int) error { return message.ErrDecodeNotSupported }
-
-func (invalidSixDigitPinCode) Encode(b *buffer.ByteBuffer) error { return nil }
+func (invalidPin) Encode(b *buffer.ByteBuffer) error { return nil }
