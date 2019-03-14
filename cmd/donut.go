@@ -57,11 +57,11 @@ func main() {
             {
                 Handler: service.HandleMail,
                 Accept: []message.Config{
-                    fileservice.PassiveRequestDescriptor,
-                    fileservice.PriorityRequestDescriptor,
-                    fileservice.OnlineStatusUpdateDescriptor,
-                    fileservice.OfflineStatusUpdateDescriptor,
-                    fileservice.HandshakeDescriptor,
+                    fileservice.PassiveRequestConfig,
+                    fileservice.PriorityRequestConfig,
+                    fileservice.OnlineStatusUpdateConfig,
+                    fileservice.OfflineStatusUpdateConfig,
+                    fileservice.HandshakeConfig,
                 },
             },
         },

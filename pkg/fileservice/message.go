@@ -6,31 +6,31 @@ import (
 )
 
 var (
-    PassiveRequestDescriptor = message.Config{
+    PassiveRequestConfig = message.Config{
         Id:   0,
         Size: 3,
         New:  func() message.Message { return &PassiveRequest{} },
     }
 
-    PriorityRequestDescriptor = message.Config{
+    PriorityRequestConfig = message.Config{
         Id:   1,
         Size: 3,
         New:  func() message.Message { return &PriorityRequest{} },
     }
 
-    OnlineStatusUpdateDescriptor = message.Config{
+    OnlineStatusUpdateConfig = message.Config{
         Id:   2,
         Size: 3,
         New:  message.Singleton(OnlineStatusUpdate),
     }
 
-    OfflineStatusUpdateDescriptor = message.Config{
+    OfflineStatusUpdateConfig = message.Config{
         Id:   3,
         Size: 3,
         New:  message.Singleton(OfflineStatusUpdate),
     }
 
-    HandshakeDescriptor = message.Config{
+    HandshakeConfig = message.Config{
         Id:   15,
         Size: 4,
         New:  func() message.Message { return &Handshake{} },
@@ -41,7 +41,7 @@ type Handshake struct {
     Version uint32
 }
 
-func (Handshake) Config() message.Config { return HandshakeDescriptor }
+func (Handshake) Config() message.Config { return HandshakeConfig }
 
 func (h *Handshake) Decode(buf *buffer.ByteBuffer, length int) error {
     var err error
@@ -59,7 +59,7 @@ type Request struct {
 type PassiveRequest struct{ Request }
 
 func (r PassiveRequest) Config() message.Config {
-    return PassiveRequestDescriptor
+    return PassiveRequestConfig
 }
 
 func (r *PassiveRequest) Decode(buf *buffer.ByteBuffer, length int) error {
@@ -79,7 +79,7 @@ func (r *PassiveRequest) Decode(buf *buffer.ByteBuffer, length int) error {
 type PriorityRequest struct{ Request }
 
 func (r PriorityRequest) Config() message.Config {
-    return PriorityRequestDescriptor
+    return PriorityRequestConfig
 }
 
 func (r *PriorityRequest) Decode(buf *buffer.ByteBuffer, length int) error {
@@ -100,7 +100,7 @@ var OnlineStatusUpdate = onlineStatusUpdate{}
 
 type onlineStatusUpdate struct{}
 
-func (s onlineStatusUpdate) Config() message.Config { return OnlineStatusUpdateDescriptor }
+func (s onlineStatusUpdate) Config() message.Config { return OnlineStatusUpdateConfig }
 
 func (onlineStatusUpdate) Decode(buf *buffer.ByteBuffer, length int) error {
     return nil
@@ -110,6 +110,6 @@ var OfflineStatusUpdate = offlineStatusUpdate{}
 
 type offlineStatusUpdate struct{}
 
-func (offlineStatusUpdate) Config() message.Config { return OfflineStatusUpdateDescriptor }
+func (offlineStatusUpdate) Config() message.Config { return OfflineStatusUpdateConfig }
 
 func (offlineStatusUpdate) Decode(buf *buffer.ByteBuffer, length int) error { return nil }
