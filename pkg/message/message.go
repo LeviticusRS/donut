@@ -1,12 +1,7 @@
 package message
 
 import (
-    "errors"
     "github.com/sprinkle-it/donut/pkg/buffer"
-)
-
-var (
-    ErrEncodeNotSupported = errors.New("message: encoding is not supported for this message")
 )
 
 func Singleton(msg Message) func() Message { return func() Message { return msg } }

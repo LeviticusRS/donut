@@ -58,8 +58,6 @@ type Request struct {
 
 type PassiveRequest struct{ Request }
 
-func newPassiveRequest() message.Message { return &PassiveRequest{} }
-
 func (r PassiveRequest) Config() message.Config {
     return PassiveRequestDescriptor
 }
@@ -77,8 +75,6 @@ func (r *PassiveRequest) Decode(buf *buffer.ByteBuffer, length int) error {
 
     return nil
 }
-
-func (PassiveRequest) Encode(*buffer.ByteBuffer) error { return message.ErrEncodeNotSupported }
 
 type PriorityRequest struct{ Request }
 
@@ -99,8 +95,6 @@ func (r *PriorityRequest) Decode(buf *buffer.ByteBuffer, length int) error {
 
     return nil
 }
-
-func (PriorityRequest) Encode(*buffer.ByteBuffer) error { return message.ErrEncodeNotSupported }
 
 var OnlineStatusUpdate = onlineStatusUpdate{}
 
