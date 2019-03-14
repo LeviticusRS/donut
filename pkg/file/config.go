@@ -1,4 +1,4 @@
-package fileservice
+package file
 
 import (
     "go.uber.org/zap"

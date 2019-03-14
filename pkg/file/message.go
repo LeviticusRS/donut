@@ -1,4 +1,4 @@
-package fileservice
+package file
 
 import (
     "github.com/sprinkle-it/donut/pkg/buffer"

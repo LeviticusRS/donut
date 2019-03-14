@@ -1,4 +1,4 @@
-package fileservice
+package file
 
 type WorkerPool chan JobQueue
 

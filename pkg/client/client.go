@@ -333,6 +333,8 @@ func (c *Client) Close() bool {
     // Close the connection gracefully.
     _ = c.connection.Close()
 
+    c.closed = true
+
     return true
 }
 

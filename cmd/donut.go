@@ -3,7 +3,8 @@ package main
 import (
     "github.com/sprinkle-it/donut/pkg/asset"
     "github.com/sprinkle-it/donut/pkg/client"
-    "github.com/sprinkle-it/donut/pkg/fileservice"
+    "github.com/sprinkle-it/donut/pkg/file"
+    "github.com/sprinkle-it/donut/pkg/game"
     "github.com/sprinkle-it/donut/pkg/message"
     "github.com/sprinkle-it/donut/pkg/server"
     "go.uber.org/zap"
@@ -24,30 +25,41 @@ func main() {
 
     cache, err := asset.OpenCache("cache", asset.IndexCount)
     if err != nil {
-        log.Fatal("Failed to open cache")
+        log.Fatal("Failed to open cache: ", err)
     }
 
     storage, err := asset.NewStorage(cache)
     if err != nil {
-        log.Fatal("Failed to create storage")
+        log.Fatal("Failed to create storage: ", err)
     }
 
-    service, err := fileservice.New(fileservice.Config{
+    fileService, err := file.New(file.Config{
         LoggerConfig:     loggerConfig,
         Capacity:         1000,
         SupportedVersion: 177,
         Provider:         storage.Get,
         Workers:          2,
-        SessionConfig: fileservice.SessionConfig{
+        SessionConfig: file.SessionConfig{
             PriorityRequestCapacity: 200,
             PassiveRequestCapacity:  200,
         },
     })
-    service.Process()
 
     if err != nil {
         log.Fatal("Failed to create file service")
     }
+
+    fileService.Process()
+
+    gameService, err := game.New(game.Config{
+
+    })
+
+    if err != nil {
+        log.Fatal("Failed to create game service")
+    }
+
+    gameService.Process()
 
     srv, err := server.New(server.Config{
         LoggerConfig:   loggerConfig,
@@ -55,13 +67,24 @@ func main() {
         ClientConfig:   client.NewDefaultConfig(),
         Receivers: []client.MailReceiver{
             {
-                Handler: service.HandleMail,
+                Handler: fileService.HandleMail,
                 Accept: []message.Config{
-                    fileservice.PassiveRequestConfig,
-                    fileservice.PriorityRequestConfig,
-                    fileservice.OnlineStatusUpdateConfig,
-                    fileservice.OfflineStatusUpdateConfig,
-                    fileservice.HandshakeConfig,
+                    file.PassiveRequestConfig,
+                    file.PriorityRequestConfig,
+                    file.OnlineStatusUpdateConfig,
+                    file.OfflineStatusUpdateConfig,
+                    file.HandshakeConfig,
+                },
+            },
+            {
+                Handler: gameService.HandleMail,
+                Accept: []message.Config{
+                    game.HandshakeConfig,
+                    game.AuthenticateConfig,
+                    game.WindowUpdateConfig,
+                    game.HeartbeatConfig,
+                    game.SceneRebuiltConfig,
+                    game.FocusChangedConfig,
                 },
             },
         },
