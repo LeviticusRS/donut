@@ -16,7 +16,7 @@ func NewDummyRepository() *DummyRepository {
 
 func (repository *DummyRepository) Get(email Email) (*Account, error) {
 	return &Account{
-		Email:       Email("sino@gmail.com"),
+		Email:       email,
 		Password:    Password("hello123"),
 		DisplayName: DisplayName("sino"),
 	}, nil
