@@ -1,7 +1,9 @@
 package main
 
 import (
+	"github.com/sprinkle-it/donut/pkg/account"
 	"github.com/sprinkle-it/donut/pkg/asset"
+	"github.com/sprinkle-it/donut/pkg/auth"
 	"github.com/sprinkle-it/donut/pkg/client"
 	"github.com/sprinkle-it/donut/pkg/file"
 	"github.com/sprinkle-it/donut/pkg/game"
@@ -51,7 +53,15 @@ func main() {
 
 	fileService.Process()
 
-	gameService, err := game.New(game.Config{})
+	accountRepository := account.NewDummyRepository()
+	authenticator := auth.NewAuthenticator(
+		auth.SupplyAccountFromRepository(accountRepository),
+		auth.MatchPasswordsBasic,
+	)
+
+	gameService, err := game.New(game.Config{
+		Authenticator: authenticator,
+	})
 
 	if err != nil {
 		log.Fatal("Failed to create game service")

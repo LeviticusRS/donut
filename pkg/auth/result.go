@@ -7,6 +7,12 @@ var (
 	couldNotFindAccount = CouldNotFindAccount{}
 )
 
+// Success indicates that the entire process of authentication
+// has been successful.
+type Success struct {
+	Account account.Account
+}
+
 // FirstFactorSuccess is an indication of the first factor procedure
 // having successfully been authenticated.
 type FirstFactorSuccess struct {

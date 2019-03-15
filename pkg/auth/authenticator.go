@@ -6,6 +6,13 @@ import "github.com/sprinkle-it/donut/pkg/account"
 // by the given Email address.
 type AccountSupplier func(email account.Email) (*account.Account, error)
 
+// SupplyAccountFromRepository fetches Account's from the given Repository.
+func SupplyAccountFromRepository(repository account.Repository) AccountSupplier {
+	return func(email account.Email) (*account.Account, error) {
+		return repository.Get(email)
+	}
+}
+
 // Authenticator authenticates users to see if they are truly
 // who they claim to be.
 type Authenticator struct {
@@ -22,7 +29,7 @@ func NewAuthenticator(supplier AccountSupplier, passwordMatcher PasswordMatcher)
 
 // Authenticate attempts to authenticate a user using the given email and
 // password credentials.
-func (auth Authenticator) Authenticate(email account.Email, password account.Password) (Result, error) {
+func (auth *Authenticator) Authenticate(email account.Email, password account.Password) (Result, error) {
 	firstFactorResult, err := auth.doFirstFactor(email, password)
 	if err != nil {
 		return nil, err
@@ -31,7 +38,9 @@ func (auth Authenticator) Authenticate(email account.Email, password account.Pas
 	// only way to type check whilst avoiding reflection unfortunately
 	switch result := firstFactorResult.(type) {
 	case FirstFactorSuccess:
-		return result, nil // TODO second factor
+		// TODO second factor
+
+		return Success{Account: result.Account}, nil
 
 	default:
 		return result, nil
@@ -43,7 +52,7 @@ func (auth Authenticator) Authenticate(email account.Email, password account.Pas
 // password input from the user's side. It returns an authentication result which
 // might indicate success or failure, or it may return an error which is an
 // indication of something very wrong.
-func (auth Authenticator) doFirstFactor(email account.Email, password account.Password) (Result, error) {
+func (auth *Authenticator) doFirstFactor(email account.Email, password account.Password) (Result, error) {
 	accountFetch, err := auth.supplyAccount(email)
 	if err != nil {
 		return nil, err
