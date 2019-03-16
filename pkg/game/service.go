@@ -6,9 +6,8 @@ import (
 
 type Service struct {
     capacity int
-    sessions map[uint64]*Session
-
     commands chan command
+    world    World
 }
 
 func New(config Config) (*Service, error) {
@@ -18,6 +17,8 @@ func New(config Config) (*Service, error) {
 func (s *Service) execute(cmd command) { s.commands <- cmd }
 
 func (s *Service) Process() {
+    s.world.Process()
+
     go func() {
         for command := range s.commands {
             command.execute(s)
@@ -43,25 +44,6 @@ func (c handleMessage) execute(s *Service) {
     case *handshake:
         _ = source.SendNow(&Ready{})
     case *Authenticate:
-        _ = source.SendNow(&Success{})
-        _ = source.SendNow(&RebuildScene{
-            InitializePlayerPositions: InitializePlayerPositions{
-                LocalPosition: Position{Level: 0, X: 3200, Z: 3200,},
-            },
-            ChunkX: 3200 >> 3,
-            ChunkZ: 3200 >> 3,
-        })
-        _ = source.SendNow(&SetHud{
-            Id: 548,
-        })
+        s.world.Register(source, Profile{})
     }
-}
-
-type unregisterSession struct {
-    cli *client.Client
-}
-
-func (cmd unregisterSession) execute(service *Service) {
-    delete(service.sessions, cmd.cli.Id())
-    cmd.cli.Info("Unregistered file session")
 }

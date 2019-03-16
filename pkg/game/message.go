@@ -18,7 +18,6 @@ var (
         New:  func() message.Message { return &Authenticate{} },
     }
 
-
     WindowUpdateConfig = message.Config{
         Id:   35,
         Size: 5,
@@ -28,7 +27,7 @@ var (
     FocusChangedConfig = message.Config{
         Id:   73,
         Size: 1,
-        New:  message.Singleton(SceneRebuilt),
+        New:  func() message.Message { return &FocusChanged{} },
     }
 
     SceneRebuiltConfig = message.Config{
@@ -43,16 +42,28 @@ var (
         New:  message.Singleton(Heartbeat),
     }
 
+    KeyTypedConfig = message.Config{
+        Id: 67,
+        Size: message.SizeVariableShort,
+        New: func() message.Message { return &KeyTyped{} },
+    }
+
+    CameraRotatedConfig = message.Config{
+        Id: 39,
+        Size: 4,
+        New: func() message.Message { return &CameraRotated{} },
+    }
+
     ReadyConfig = message.Config{
         Id:   0,
         Size: 8,
         New:  func() message.Message { return &Ready{} },
     }
 
-    RebuildSceneConfig = message.Config{
+    InitializeSceneConfig = message.Config{
         Id:   0,
         Size: message.SizeVariableShort,
-        New:  func() message.Message { return &RebuildScene{} },
+        New:  func() message.Message { return &InitializeScene{} },
     }
 
     SuccessConfig = message.Config{
@@ -65,6 +76,12 @@ var (
         Id:   84,
         Size: 2,
         New:  func() message.Message { return &SetHud{} },
+    }
+
+    PlayerUpdateConfig = message.Config{
+        Id:   79,
+        Size: message.SizeVariableShort,
+        New:  func() message.Message { return &PlayerUpdate{} },
     }
 
     Handshake    = &handshake{}
@@ -98,69 +115,60 @@ func (*Ready) Config() message.Config { return ReadyConfig }
 func (r *Ready) Encode(buf *buffer.ByteBuffer) error { return buf.PutUint64(r.AuthenticationKey) }
 
 type Success struct {
+    UserGroup uint8
+    Moderator bool
+    PlayerId  uint16
+    Members   bool
 }
 
 func (*Success) Config() message.Config { return SuccessConfig }
 
 func (s *Success) Encode(buf *buffer.ByteBuffer) error {
-    if err := buf.PutUint8(2); err != nil {
+    if err := buf.PutUint8(s.UserGroup); err != nil {
         return err
     }
 
-    if err := buf.PutUint8(0); err != nil {
+    if err := buf.PutBool(s.Moderator); err != nil {
         return err
     }
 
-    if err := buf.PutUint16(1); err != nil {
+    if err := buf.PutUint16(s.PlayerId); err != nil {
         return err
     }
 
-    if err := buf.PutUint8(1); err != nil {
-        return err
-    }
-
-    return nil
-}
-
-type RebuildScene struct {
-    InitializePlayerPositions InitializePlayerPositions
-    ChunkX                    uint16
-    ChunkZ                    uint16
-}
-
-func (*RebuildScene) Config() message.Config { return RebuildSceneConfig }
-
-func (r *RebuildScene) Encode(buf *buffer.ByteBuffer) error {
-    if err := r.InitializePlayerPositions.Encode(buf); err != nil {
-        return err
-    }
-
-    if err := buf.PutUint16(r.ChunkX); err != nil {
-        return err
-    }
-
-    if err := buf.PutUint16(r.ChunkZ); err != nil {
+    if err := buf.PutBool(s.Members); err != nil {
         return err
     }
 
     return nil
 }
 
-type InitializePlayerPositions struct {
-    LocalPosition Position
-    Positions     [2046]Position
+type InitializeScene struct {
+    Position        Position
+    PlayerPositions [2046]Position
 }
 
-func (p *InitializePlayerPositions) Encode(buf *buffer.ByteBuffer) error {
+func (*InitializeScene) Config() message.Config { return InitializeSceneConfig }
+
+func (r *InitializeScene) Encode(buf *buffer.ByteBuffer) error {
     buf.StartBitAccess()
 
-    p.LocalPosition.EncodeHash(buf)
+    r.Position.EncodeHash(buf)
 
-    for i := 0; i < len(p.Positions); i++ {
-        p.Positions[i].EncodeBlockHash(buf)
+    for i := 0; i < len(r.PlayerPositions); i++ {
+        r.PlayerPositions[i].EncodeBlockHash(buf)
     }
 
     buf.EndBitAccess()
+
+    if err := buf.PutUint16(r.Position.ChunkX()); err != nil {
+        return err
+    }
+
+    if err := buf.PutUint16(r.Position.ChunkZ()); err != nil {
+        return err
+    }
+
     return nil
 }
 
@@ -182,6 +190,7 @@ func (heartbeat) Decode(buf *buffer.ByteBuffer, length int) error {
     return nil
 }
 
+// Inbound message from the client that lets the server know that the scene has been successfully rebuilt.
 type sceneRebuilt struct{}
 
 func (sceneRebuilt) Config() message.Config { return SceneRebuiltConfig }
@@ -191,12 +200,16 @@ func (sceneRebuilt) Decode(buf *buffer.ByteBuffer, length int) error {
 }
 
 type FocusChanged struct {
-
+    Focused bool
 }
 
-func (FocusChanged) Config() message.Config { return FocusChangedConfig }
+func (*FocusChanged) Config() message.Config { return FocusChangedConfig }
 
-func (FocusChanged) Decode(buf *buffer.ByteBuffer, length int) error {
+func (f *FocusChanged) Decode(buf *buffer.ByteBuffer, length int) error {
+    var err error
+    if f.Focused, err = buf.GetBool(); err != nil {
+        return err
+    }
     return nil
 }
 
@@ -210,7 +223,28 @@ func (s *SetHud) Encode(buf *buffer.ByteBuffer) error {
     return buf.PutUint16(s.Id)
 }
 
+type KeyTyped struct {
 
+}
 
+func (KeyTyped) Config() message.Config {
+    return KeyTypedConfig
+}
+
+func (KeyTyped) Decode(buf *buffer.ByteBuffer, length int) error {
+    return nil
+}
+
+type CameraRotated struct {
+
+}
+
+func (CameraRotated) Config() message.Config {
+    return CameraRotatedConfig
+}
+
+func (CameraRotated) Decode(buf *buffer.ByteBuffer, length int) error {
+    return nil
+}
 
 

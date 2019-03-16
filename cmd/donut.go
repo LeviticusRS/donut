@@ -12,6 +12,7 @@ import (
     "log"
     "net/http"
     _ "net/http/pprof"
+    "time"
 )
 
 func main() {
@@ -52,7 +53,10 @@ func main() {
     fileService.Process()
 
     gameService, err := game.New(game.Config{
-
+        WorldConfig: game.WorldConfig{
+            PlayerCapacity: 2048,
+            Delta:          time.Millisecond * 600,
+        },
     })
 
     if err != nil {
@@ -85,6 +89,8 @@ func main() {
                     game.HeartbeatConfig,
                     game.SceneRebuiltConfig,
                     game.FocusChangedConfig,
+                    game.KeyTypedConfig,
+                    game.CameraRotatedConfig,
                 },
             },
         },

@@ -9,9 +9,7 @@ const (
     NullTerminator = 0
 )
 
-var (
-    masks = []uint32{0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff,}
-)
+var masks = []uint32{0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff,}
 
 type ByteBuffer struct {
     Bytes     []byte
@@ -166,6 +164,29 @@ func (b *ByteBuffer) PutCString(v string) error {
     return nil
 }
 
+func (b *ByteBuffer) PutBool(v bool) error {
+    if v {
+        return b.PutUint8(1)
+    }
+    return b.PutUint8(0)
+}
+
+func (b *ByteBuffer) GetBool() (bool, error) {
+    v, err := b.GetUint8()
+    if err != nil {
+        return false, err
+    }
+
+    switch v {
+    case 0:
+        return false, nil
+    case 1:
+        return true, nil
+    default:
+        return false, errors.New("buffer: expected value to be either 0 or 1")
+    }
+}
+
 func (b *ByteBuffer) StartBitAccess() {
     b.BitOffset = b.Offset * 8
 }
@@ -174,7 +195,7 @@ func (b *ByteBuffer) EndBitAccess() {
     b.Offset = (b.BitOffset + 7) / 8
 }
 
-func (b *ByteBuffer) WriteBits(v uint32, n int) {
+func (b *ByteBuffer) PutBits(v uint32, n int) {
     bytePos := b.BitOffset >> 3
     offset := 8 - (b.BitOffset & 7)
     b.BitOffset += n
