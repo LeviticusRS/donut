@@ -1,17 +1,22 @@
 package game
 
 import (
-    "github.com/sprinkle-it/donut/pkg/client"
+	"github.com/sprinkle-it/donut/pkg/client"
 )
 
 type Service struct {
-    capacity int
-    commands chan command
-    world    World
+	capacity int
+	sessions map[uint64]*Session
+
+	authenticator Authenticator
+
+	commands chan command
+
+	world World
 }
 
 func New(config Config) (*Service, error) {
-    return config.Build()
+	return config.Build()
 }
 
 func (s *Service) execute(cmd command) { s.commands <- cmd }
@@ -27,15 +32,15 @@ func (s *Service) Process() {
 }
 
 func (s *Service) HandleMail(mail client.Mail) {
-    s.execute(handleMessage{mail: mail})
+	s.execute(handleMessage{mail: mail})
 }
 
 type command interface {
-    execute(s *Service)
+	execute(s *Service)
 }
 
 type handleMessage struct {
-    mail client.Mail
+	mail client.Mail
 }
 
 func (c handleMessage) execute(s *Service) {
@@ -43,7 +48,16 @@ func (c handleMessage) execute(s *Service) {
     switch c.mail.Message.(type) {
     case *handshake:
         _ = source.SendNow(&Ready{})
-    case *Authenticate:
+    case *NewLogin:
         s.world.Register(source, Profile{})
     }
+}
+
+type unregisterSession struct {
+	cli *client.Client
+}
+
+func (cmd unregisterSession) execute(s *Service) {
+	delete(s.sessions, cmd.cli.Id())
+	cmd.cli.Info("Unregistered game session")
 }
