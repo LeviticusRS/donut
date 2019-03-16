@@ -54,13 +54,12 @@ func main() {
 	fileService.Process()
 
 	accountRepository := account.NewDummyRepository()
-	authenticator := game.NewAuthenticator(
+	game.NewAuthenticator( // TODO
 		game.SupplyAccountFromRepository(accountRepository),
 		account.MatchPasswordsBasic,
 	)
 
 	gameService, err := game.New(game.Config{
-		Authenticator: authenticator,
 		WorldConfig: game.WorldConfig{
 			PlayerCapacity: 2048,
 			Delta:          time.Millisecond * 600,
@@ -73,42 +72,45 @@ func main() {
 
 	gameService.Process()
 
-    srv, err := server.New(server.Config{
-        LoggerConfig:   loggerConfig,
-        ClientCapacity: 2000,
-        ClientConfig:   client.NewDefaultConfig(),
-        Receivers: []client.MailReceiver{
-            {
-                Handler: fileService.HandleMail,
-                Accept: []message.Config{
-                    file.PassiveRequestConfig,
-                    file.PriorityRequestConfig,
-                    file.OnlineStatusUpdateConfig,
-                    file.OfflineStatusUpdateConfig,
-                    file.HandshakeConfig,
-                },
-            },
-            {
-                Handler: gameService.HandleMail,
-                Accept: []message.Config{
-                    game.HandshakeConfig,
-                    game.NewLoginConfig,
-                    game.WindowUpdateConfig,
-                    game.HeartbeatConfig,
-                    game.SceneRebuiltConfig,
-                    game.FocusChangedConfig,
-                    game.KeyTypedConfig,
-                    game.CameraRotatedConfig,
-                },
-            },
-        },
-    })
+	srv, err := server.New(server.Config{
+		LoggerConfig:   loggerConfig,
+		ClientCapacity: 2000,
+		ClientConfig:   client.NewDefaultConfig(),
+		Receivers: []client.MailReceiver{
+			{
+				Handler: fileService.HandleMail,
+				Accept: []message.Config{
+					file.PassiveRequestConfig,
+					file.PriorityRequestConfig,
+					file.OnlineStatusUpdateConfig,
+					file.OfflineStatusUpdateConfig,
+					file.HandshakeConfig,
+				},
+			},
+			{
+				Handler: gameService.HandleMail,
+				Accept: []message.Config{
+					game.HandshakeConfig,
+					game.NewLoginConfig,
+					game.WindowUpdateConfig,
+					game.HeartbeatConfig,
+					game.MouseActivityRecordedConfig,
+					game.MouseClickedConfig,
+					game.ButtonPressedConfig,
+					game.SceneRebuiltConfig,
+					game.FocusChangedConfig,
+					game.KeyTypedConfig,
+					game.CameraRotatedConfig,
+				},
+			},
+		},
+	})
 
 	if err != nil {
 		log.Fatal("Failed to create server", err)
 	}
 
-    if err := srv.Listen(43594); err != nil {
-        log.Fatal("Failed to listen to server port", err)
-    }
+	if err := srv.Listen(43594); err != nil {
+		log.Fatal("Failed to listen to server port", err)
+	}
 }
