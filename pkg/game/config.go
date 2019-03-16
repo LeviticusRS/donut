@@ -1,11 +1,9 @@
 package game
 
-import "github.com/sprinkle-it/donut/pkg/auth"
-
 type Config struct {
 	Capacity int
 
-	Authenticator auth.Authenticator
+	Authenticator Authenticator
 }
 
 func (c Config) Build() (*Service, error) {

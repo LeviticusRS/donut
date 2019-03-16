@@ -1,6 +1,11 @@
-package auth
+package game
 
 import "github.com/sprinkle-it/donut/pkg/account"
+
+var (
+	passwordMismatch    = PasswordMismatch{}
+	couldNotFindAccount = CouldNotFindAccount{}
+)
 
 // AccountSupplier supplies a user Account that is registered
 // by the given Email address.
@@ -13,14 +18,38 @@ func SupplyAccountFromRepository(repository account.Repository) AccountSupplier 
 	}
 }
 
+// Success indicates that the entire process of authentication
+// has been successful.
+type AuthSuccess struct {
+	Account account.Account
+}
+
+// FirstFactorSuccess is an indication of the first factor procedure
+// having successfully been authenticated.
+type FirstFactorSuccess struct {
+	Account account.Account
+}
+
+// PasswordMismatch is an authentication Result that indicates
+// two given Password's did not match, meaning the user has
+// entered an invalid password.
+type PasswordMismatch struct{}
+
+// CouldNotFindAccount is an authentication Result that indicates
+// that a user does not exist in the database.
+type CouldNotFindAccount struct{}
+
+// Result is the result from attempting to authenticate a user.
+type Result interface{}
+
 // Authenticator authenticates users to see if they are truly
 // who they claim to be.
 type Authenticator struct {
 	supplyAccount  AccountSupplier
-	matchPasswords PasswordMatcher
+	matchPasswords account.PasswordMatcher
 }
 
-func NewAuthenticator(supplier AccountSupplier, passwordMatcher PasswordMatcher) Authenticator {
+func NewAuthenticator(supplier AccountSupplier, passwordMatcher account.PasswordMatcher) Authenticator {
 	return Authenticator{
 		supplyAccount:  supplier,
 		matchPasswords: passwordMatcher,
@@ -40,7 +69,7 @@ func (auth *Authenticator) Authenticate(email account.Email, password account.Pa
 	case FirstFactorSuccess:
 		// TODO second factor
 
-		return Success{Account: result.Account}, nil
+		return AuthSuccess{Account: result.Account}, nil
 
 	default:
 		return result, nil

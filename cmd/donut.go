@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/sprinkle-it/donut/pkg/account"
 	"github.com/sprinkle-it/donut/pkg/asset"
-	"github.com/sprinkle-it/donut/pkg/auth"
 	"github.com/sprinkle-it/donut/pkg/client"
 	"github.com/sprinkle-it/donut/pkg/file"
 	"github.com/sprinkle-it/donut/pkg/game"
@@ -54,9 +53,9 @@ func main() {
 	fileService.Process()
 
 	accountRepository := account.NewDummyRepository()
-	authenticator := auth.NewAuthenticator(
-		auth.SupplyAccountFromRepository(accountRepository),
-		auth.MatchPasswordsBasic,
+	authenticator := game.NewAuthenticator(
+		game.SupplyAccountFromRepository(accountRepository),
+		account.MatchPasswordsBasic,
 	)
 
 	gameService, err := game.New(game.Config{
