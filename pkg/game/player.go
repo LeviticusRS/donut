@@ -68,9 +68,29 @@ func (p *Player) Initialize() {
 	p.Send(&InitializeScene{Position: p.position})
 	p.Send(&SetHud{Id: 161})
 
+	p.Send(&DisplaySystemMessage{Text: "Welcome to Sino and Sini's Donut Camp!"})
+	p.Send(&ClearPerspectiveCamera{})
+	p.Send(&ClearVariables{})
+
 	for key, value := range fixedModeInterfaces {
 		p.Send(&OpenChildInterface{Parent: 161<<16 | uint32(key), Id: uint16(value), Behavior: 1})
 	}
+
+	// Removes the 'You must have a display name to chat' filter within the chatbox
+	p.Send(&InvokeInterfaceScript{Id: 1105, Arguments: []ScriptArgument{1}})
+
+	for skillId := 0; skillId < 23; skillId++ {
+		p.Send(&SetSkill{Id: uint8(skillId), Level: 99, Experience: 14000000})
+	}
+
+	p.Send(&SetPlayerContextMenuOption{Slot: 0, Label: "Follow", Prioritized: true})
+	p.Send(&SetPlayerContextMenuOption{Slot: 2, Label: "Follow"})
+	p.Send(&SetPlayerContextMenuOption{Slot: 3, Label: "Trade with"})
+	p.Send(&SetPlayerContextMenuOption{Slot: 8, Label: "Report"})
+
+	p.Send(&SetEnergy{Percentage: 100})
+	p.Send(&SetWeight{Kilograms: 180}) // hadyn's irl weight be like
+	p.Send(&SetMinimapState{Id: 2})
 
 	p.Flush()
 }

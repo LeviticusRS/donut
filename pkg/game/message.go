@@ -1,8 +1,12 @@
 package game
 
 import (
+	"fmt"
+	"github.com/sprinkle-it/donut/pkg/account"
 	"github.com/sprinkle-it/donut/pkg/buffer"
 	"github.com/sprinkle-it/donut/pkg/message"
+	"reflect"
+	"strings"
 )
 
 var (
@@ -102,10 +106,22 @@ var (
 		New:  func() message.Message { return &SetHud{} },
 	}
 
+	SetPlayerContextMenuOptionConfig = message.Config{
+		Id:   66,
+		Size: message.SizeVariableByte,
+		New:  func() message.Message { return &SetPlayerContextMenuOption{} },
+	}
+
 	OpenChildInterfaceConfig = message.Config{
 		Id:   77,
 		Size: 7,
 		New:  func() message.Message { return &OpenChildInterface{} },
+	}
+
+	RelocateChildInterfaceConfig = message.Config{
+		Id:   82,
+		Size: 8,
+		New:  func() message.Message { return &RelocateChildInterface{} },
 	}
 
 	CloseChildInterfaceConfig = message.Config{
@@ -118,6 +134,102 @@ var (
 		Id:   52,
 		Size: 0,
 		New:  func() message.Message { return &ClearInputBox{} },
+	}
+
+	DisplaySystemMessageConfig = message.Config{
+		Id:   3,
+		Size: message.SizeVariableByte,
+		New:  func() message.Message { return &DisplaySystemMessage{} },
+	}
+
+	SetEnergyConfig = message.Config{
+		Id:   60,
+		Size: 1,
+		New:  func() message.Message { return &SetEnergy{} },
+	}
+
+	SetWeightConfig = message.Config{
+		Id:   71,
+		Size: 2,
+		New:  func() message.Message { return &SetWeight{} },
+	}
+
+	SetMinimapStateConfig = message.Config{
+		Id:   74,
+		Size: 1,
+		New:  func() message.Message { return &SetMinimapState{} },
+	}
+
+	SetSystemUpdateTimerConfig = message.Config{
+		Id:   72,
+		Size: 2,
+		New:  func() message.Message { return &SetSystemUpdateTimer{} },
+	}
+
+	ClearPerspectiveCameraConfig = message.Config{
+		Id:   2,
+		Size: 0,
+		New:  func() message.Message { return &ClearPerspectiveCamera{} },
+	}
+
+	ClearInventoryConfig = message.Config{
+		Id:   7,
+		Size: 4,
+		New:  func() message.Message { return &ClearInventory{} },
+	}
+
+	LogoutConfig = message.Config{
+		Id:   1,
+		Size: 0,
+		New:  func() message.Message { return &Logout{} },
+	}
+
+	TargetPatchConfig = message.Config{
+		Id:   64,
+		Size: 2,
+		New:  func() message.Message { return &TargetPatch{} },
+	}
+
+	ClearPatchConfig = message.Config{
+		Id:   25,
+		Size: 2,
+		New:  func() message.Message { return &ClearPatch{} },
+	}
+
+	Set32BitVariableConfig = message.Config{
+		Id:   4,
+		Size: 6,
+		New:  func() message.Message { return &Set32BitVariable{} },
+	}
+
+	Set8BitVariableConfig = message.Config{
+		Id:   63,
+		Size: 3,
+		New:  func() message.Message { return &Set8BitVariable{} },
+	}
+
+	ClearVariablesConfig = message.Config{
+		Id:   78,
+		Size: 0,
+		New:  func() message.Message { return &ClearVariables{} },
+	}
+
+	RevertVariablesConfig = message.Config{
+		Id:   73,
+		Size: 0,
+		New:  func() message.Message { return &RevertVariables{} },
+	}
+
+	SetSkillConfig = message.Config{
+		Id:   22,
+		Size: 6,
+		New:  func() message.Message { return &SetSkill{} },
+	}
+
+	InvokeInterfaceScriptConfig = message.Config{
+		Id:   62,
+		Size: message.SizeVariableShort,
+		New:  func() message.Message { return &InvokeInterfaceScript{} },
 	}
 
 	PlayerUpdateConfig = message.Config{
@@ -424,11 +536,274 @@ func (s *SetHud) Encode(buf *buffer.ByteBuffer) error {
 	return buf.PutUint16(s.Id)
 }
 
+type SetPlayerContextMenuOption struct {
+	Slot        uint8
+	Label       string
+	Prioritized bool
+}
+
+func (*SetPlayerContextMenuOption) Config() message.Config { return SetPlayerContextMenuOptionConfig }
+
+func (s SetPlayerContextMenuOption) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutBool(s.Prioritized); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint8(s.Slot); err != nil {
+		return err
+	}
+
+	if err := buf.PutCString(s.Label); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type ClearInputBox struct{}
 
 func (*ClearInputBox) Config() message.Config { return ClearInputBoxConfig }
 
 func (ClearInputBox) Encode(buf *buffer.ByteBuffer) error {
+	return nil
+}
+
+type ScriptArgument interface{}
+
+type InvokeInterfaceScript struct {
+	Id        uint32
+	Arguments []ScriptArgument
+}
+
+func (i InvokeInterfaceScript) Identifiers() (string, error) {
+	var bldr strings.Builder
+	for j := len(i.Arguments) - 1; j >= 0; j-- {
+		switch value := i.Arguments[j].(type) {
+		case string:
+			bldr.WriteRune('s')
+		case int:
+			bldr.WriteRune('i')
+		default:
+			return "", fmt.Errorf("given type of %v is unsupported in interface script", reflect.TypeOf(value))
+		}
+	}
+
+	return bldr.String(), nil
+}
+
+func (*InvokeInterfaceScript) Config() message.Config { return InvokeInterfaceScriptConfig }
+
+func (i InvokeInterfaceScript) Encode(buf *buffer.ByteBuffer) error {
+	scriptIdentifiers, err := i.Identifiers()
+	if err != nil {
+		return err
+	}
+
+	if err := buf.PutCString(scriptIdentifiers); err != nil {
+		return err
+	}
+
+	for argumentIdx, character := range scriptIdentifiers {
+		var err error
+		var value = i.Arguments[argumentIdx]
+
+		if string(character) == "s" {
+			err = buf.PutCString(value.(string))
+		} else {
+			err = buf.PutUint32(uint32(value.(int)))
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := buf.PutUint32(i.Id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type DisplaySystemMessage struct {
+	Type            uint8
+	InteractingWith *account.DisplayName
+	Text            string
+}
+
+func (*DisplaySystemMessage) Config() message.Config { return DisplaySystemMessageConfig }
+
+func (s *DisplaySystemMessage) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint8(s.Type); err != nil { // TODO encode this as a smart
+		return nil
+	}
+
+	if err := buf.PutBool(s.InteractingWith != nil); err != nil {
+		return err
+	}
+
+	if s.InteractingWith != nil {
+		if err := buf.PutCString(string(*s.InteractingWith)); err != nil {
+			return err
+		}
+	}
+
+	if err := buf.PutCString(s.Text); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SetSystemUpdateTimer struct {
+	Ticks uint16
+}
+
+func (*SetSystemUpdateTimer) Config() message.Config { return SetSystemUpdateTimerConfig }
+
+func (s *SetSystemUpdateTimer) Encode(buf *buffer.ByteBuffer) error {
+	return buf.PutUint16(s.Ticks)
+}
+
+type ClearPerspectiveCamera struct{}
+
+func (*ClearPerspectiveCamera) Config() message.Config { return ClearPerspectiveCameraConfig }
+
+func (s *ClearPerspectiveCamera) Encode(buf *buffer.ByteBuffer) error {
+	return nil
+}
+
+type ClearInventory struct {
+	Parent uint32
+}
+
+func (*ClearInventory) Config() message.Config { return ClearInventoryConfig }
+
+func (s *ClearInventory) Encode(buf *buffer.ByteBuffer) error {
+	return buf.PutUint32(s.Parent)
+}
+
+type Logout struct{}
+
+func (*Logout) Config() message.Config { return LogoutConfig }
+
+func (s *Logout) Encode(buf *buffer.ByteBuffer) error {
+	return nil
+}
+
+type TargetPatch struct {
+	X uint8
+	Z uint8
+}
+
+func (*TargetPatch) Config() message.Config { return TargetPatchConfig }
+
+func (s *TargetPatch) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint8(s.Z); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint8(s.X); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type ClearPatch struct {
+	X uint8
+	Z uint8
+}
+
+func (*ClearPatch) Config() message.Config { return ClearPatchConfig }
+
+func (s *ClearPatch) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint8(s.Z); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint8(s.X); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SetSkill struct {
+	Id         uint8
+	Level      uint8
+	Experience uint32
+}
+
+func (*SetSkill) Config() message.Config { return SetSkillConfig }
+
+func (s *SetSkill) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint8(s.Id); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint8(s.Level); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint32(s.Experience); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type Set32BitVariable struct {
+	Id    uint16
+	Value uint32
+}
+
+func (*Set32BitVariable) Config() message.Config { return Set32BitVariableConfig }
+
+func (s *Set32BitVariable) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint16(s.Id); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint32(s.Value); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type Set8BitVariable struct {
+	Id    uint16
+	Value uint8
+}
+
+func (*Set8BitVariable) Config() message.Config { return Set8BitVariableConfig }
+
+func (s *Set8BitVariable) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint16(s.Id); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint8(s.Value); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type ClearVariables struct{}
+
+func (*ClearVariables) Config() message.Config { return ClearVariablesConfig }
+
+func (s *ClearVariables) Encode(buf *buffer.ByteBuffer) error {
+	return nil
+}
+
+type RevertVariables struct{}
+
+func (*RevertVariables) Config() message.Config { return RevertVariablesConfig }
+
+func (s *RevertVariables) Encode(buf *buffer.ByteBuffer) error {
 	return nil
 }
 
@@ -456,14 +831,75 @@ func (o *OpenChildInterface) Encode(buf *buffer.ByteBuffer) error {
 	return nil
 }
 
+type SetEnergy struct {
+	Percentage uint8
+}
+
+func (*SetEnergy) Config() message.Config { return SetEnergyConfig }
+
+func (s *SetEnergy) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint8(s.Percentage); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SetWeight struct {
+	Kilograms uint16
+}
+
+func (*SetWeight) Config() message.Config { return SetWeightConfig }
+
+func (s *SetWeight) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint16(s.Kilograms); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SetMinimapState struct {
+	Id uint8
+}
+
+func (*SetMinimapState) Config() message.Config { return SetMinimapStateConfig }
+
+func (s *SetMinimapState) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint8(s.Id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type RelocateChildInterface struct {
+	ParentFrom uint32
+	ParentTo   uint32
+}
+
+func (*RelocateChildInterface) Config() message.Config { return RelocateChildInterfaceConfig }
+
+func (r *RelocateChildInterface) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint32(r.ParentTo); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint32(r.ParentFrom); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type CloseChildInterface struct {
 	Parent uint32
 }
 
 func (*CloseChildInterface) Config() message.Config { return CloseChildInterfaceConfig }
 
-func (o *CloseChildInterface) Encode(buf *buffer.ByteBuffer) error {
-	if err := buf.PutUint32(o.Parent); err != nil {
+func (c *CloseChildInterface) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint32(c.Parent); err != nil {
 		return err
 	}
 
