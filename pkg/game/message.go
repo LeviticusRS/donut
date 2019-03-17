@@ -82,6 +82,24 @@ var (
 		New:  func() message.Message { return &CameraRotated{} },
 	}
 
+	MinimapWalkConfig = message.Config{
+		Id:   52,
+		Size: message.SizeVariableByte,
+		New:  func() message.Message { return &MinimapWalk{} },
+	}
+
+	WalkHereConfig = message.Config{
+		Id:   96,
+		Size: message.SizeVariableByte,
+		New:  func() message.Message { return &WalkHere{} },
+	}
+
+	ExamineObjectConfig = message.Config{
+		Id:   36,
+		Size: 2,
+		New:  func() message.Message { return &ExamineObject{} },
+	}
+
 	ButtonPressedConfig = message.Config{
 		Id:   68,
 		Size: 9,
@@ -1088,6 +1106,104 @@ func (KeyTyped) Config() message.Config {
 
 func (KeyTyped) Decode(buf *buffer.ByteBuffer, length int) error {
 	return nil
+}
+
+type MinimapWalk struct {
+	Z             uint16
+	X             uint16
+	CtrlRunning   bool
+	CtrlShiftTele bool
+}
+
+func (MinimapWalk) Config() message.Config {
+	return MinimapWalkConfig
+}
+
+func (m *MinimapWalk) Decode(buf *buffer.ByteBuffer, length int) (err error) {
+	if m.Z, err = buf.GetUint16(); err != nil {
+		return
+	}
+
+	if m.X, err = buf.GetUint16(); err != nil {
+		return
+	}
+
+	var walkFlags uint8
+	if walkFlags, err = buf.GetUint8(); err != nil {
+		return
+	}
+
+	if walkFlags == 2 {
+		m.CtrlShiftTele = true
+	} else if walkFlags == 1 {
+		m.CtrlRunning = true
+	}
+
+	buf.GetUint8()  // TODO
+	buf.GetUint8()  // TODO
+	buf.GetUint16() // TODO
+
+	buf.GetUint8() // TODO
+	buf.GetUint8() // TODO
+	buf.GetUint8() // TODO
+	buf.GetUint8() // TODO
+
+	buf.GetUint16() // TODO
+	buf.GetUint16() // TODO
+
+	buf.GetUint8() // TODO
+
+	return
+}
+
+type WalkHere struct {
+	Z             uint16
+	X             uint16
+	CtrlRunning   bool
+	CtrlShiftTele bool
+}
+
+func (WalkHere) Config() message.Config {
+	return WalkHereConfig
+}
+
+func (w *WalkHere) Decode(buf *buffer.ByteBuffer, length int) (err error) {
+	if w.Z, err = buf.GetUint16(); err != nil {
+		return
+	}
+
+	if w.X, err = buf.GetUint16(); err != nil {
+		return
+	}
+
+	var walkFlags uint8
+	if walkFlags, err = buf.GetUint8(); err != nil {
+		return
+	}
+
+	if walkFlags == 2 {
+		w.CtrlShiftTele = true
+	} else if walkFlags == 1 {
+		w.CtrlRunning = true
+	}
+
+	return
+}
+
+type ExamineObject struct {
+	Id uint16
+}
+
+func (ExamineObject) Config() message.Config {
+	return ExamineObjectConfig
+}
+
+func (e *ExamineObject) Decode(buf *buffer.ByteBuffer, length int) (err error) {
+	if e.Id, err = buf.GetUint16(); err != nil {
+		return
+	}
+
+	return
 }
 
 type CameraRotated struct {
