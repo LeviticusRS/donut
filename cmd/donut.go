@@ -94,6 +94,7 @@ func main() {
 					game.NewLoginConfig,
 					game.WindowUpdateConfig,
 					game.HeartbeatConfig,
+					game.ClientPerformanceMeasuredConfig,
 					game.MouseActivityRecordedConfig,
 					game.MouseClickedConfig,
 					game.ButtonPressedConfig,

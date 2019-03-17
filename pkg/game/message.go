@@ -64,6 +64,12 @@ var (
 		New:  func() message.Message { return &MouseActivityRecorded{} },
 	}
 
+	ClientPerformanceMeasuredConfig = message.Config{
+		Id:   111,
+		Size: 10,
+		New:  func() message.Message { return &ClientPerformanceMeasured{} },
+	}
+
 	KeyTypedConfig = message.Config{
 		Id:   67,
 		Size: message.SizeVariableShort,
@@ -226,10 +232,40 @@ var (
 		New:  func() message.Message { return &SetSkill{} },
 	}
 
+	ModifyLabelTextConfig = message.Config{
+		Id:   19,
+		Size: message.SizeVariableShort,
+		New:  func() message.Message { return &ModifyLabelText{} },
+	}
+
+	ModifyLabelColourConfig = message.Config{
+		Id:   24,
+		Size: 6,
+		New:  func() message.Message { return &ModifyLabelColour{} },
+	}
+
 	InvokeInterfaceScriptConfig = message.Config{
 		Id:   62,
 		Size: message.SizeVariableShort,
 		New:  func() message.Message { return &InvokeInterfaceScript{} },
+	}
+
+	ToggleComponentVisibilityConfig = message.Config{
+		Id:   21,
+		Size: 5,
+		New:  func() message.Message { return &ToggleComponentVisibility{} },
+	}
+
+	RequestClientPerformanceConfig = message.Config{
+		Id:   69,
+		Size: 8,
+		New:  func() message.Message { return &RequestClientPerformance{} },
+	}
+
+	GroupedEntityUpdateConfig = message.Config{
+		Id:   17,
+		Size: message.SizeVariableShort,
+		New:  func() message.Message { return &GroupedEntityUpdate{} },
 	}
 
 	PlayerUpdateConfig = message.Config{
@@ -430,7 +466,7 @@ type ButtonPressed struct {
 	Interface    int
 	Button       int
 	Component    uint16
-	SubComponent uint16 // TODO identify this
+	SubComponent uint16 // TODO is truly a subcomponent? need confirmation or proper identification
 }
 
 func (ButtonPressed) Config() message.Config { return ButtonPressedConfig }
@@ -503,6 +539,35 @@ func (MouseActivityRecorded) Decode(buf *buffer.ByteBuffer, length int) error {
 	return buf.Skip(length)
 }
 
+type ClientPerformanceMeasured struct {
+	FirstKey  uint32
+	SecondKey uint32
+	FPS       uint8
+	GCTime    uint8
+}
+
+func (ClientPerformanceMeasured) Config() message.Config { return ClientPerformanceMeasuredConfig }
+
+func (c ClientPerformanceMeasured) Decode(buf *buffer.ByteBuffer, length int) (err error) {
+	if c.GCTime, err = buf.GetUint8(); err != nil {
+		return
+	}
+
+	if c.FPS, err = buf.GetUint8(); err != nil {
+		return
+	}
+
+	if c.FirstKey, err = buf.GetUint32(); err != nil {
+		return
+	}
+
+	if c.SecondKey, err = buf.GetUint32(); err != nil {
+		return
+	}
+
+	return
+}
+
 // Inbound message from the client that lets the server know that the scene has been successfully rebuilt.
 type sceneRebuilt struct{}
 
@@ -536,6 +601,76 @@ func (s *SetHud) Encode(buf *buffer.ByteBuffer) error {
 	return buf.PutUint16(s.Id)
 }
 
+type GroupedEntityUpdate struct {
+	X        uint8
+	Z        uint8
+	Children []message.Outbound
+}
+
+func (*GroupedEntityUpdate) Config() message.Config { return GroupedEntityUpdateConfig }
+
+func (g *GroupedEntityUpdate) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint8(g.Z); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint8(g.X); err != nil {
+		return err
+	}
+
+	for _, msg := range g.Children {
+		if err := buf.PutUint8(msg.Config().Id); err != nil {
+			return err
+		}
+
+		if err := msg.Encode(buf); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type ModifyLabelText struct {
+	Parent uint32
+	Text   string
+}
+
+func (*ModifyLabelText) Config() message.Config { return ModifyLabelTextConfig }
+
+func (m *ModifyLabelText) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint32(m.Parent); err != nil {
+		return err
+	}
+
+	if err := buf.PutCString(m.Text); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type ModifyLabelColour struct {
+	Parent uint32
+	R      int
+	G      int
+	B      int
+}
+
+func (*ModifyLabelColour) Config() message.Config { return ModifyLabelColourConfig }
+
+func (m *ModifyLabelColour) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint32(m.Parent); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint16(uint16(m.R<<10&31 | m.G<<5&31 | m.B&31)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type SetPlayerContextMenuOption struct {
 	Slot        uint8
 	Label       string
@@ -565,6 +700,44 @@ type ClearInputBox struct{}
 func (*ClearInputBox) Config() message.Config { return ClearInputBoxConfig }
 
 func (ClearInputBox) Encode(buf *buffer.ByteBuffer) error {
+	return nil
+}
+
+type ToggleComponentVisibility struct {
+	Parent uint32
+	Hidden bool
+}
+
+func (*ToggleComponentVisibility) Config() message.Config { return ToggleComponentVisibilityConfig }
+
+func (t ToggleComponentVisibility) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint32(t.Parent); err != nil {
+		return err
+	}
+
+	if err := buf.PutBool(t.Hidden); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type RequestClientPerformance struct {
+	FirstKey  uint32
+	SecondKey uint32
+}
+
+func (*RequestClientPerformance) Config() message.Config { return RequestClientPerformanceConfig }
+
+func (r RequestClientPerformance) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint32(r.FirstKey); err != nil {
+		return err
+	}
+
+	if err := buf.PutUint32(r.SecondKey); err != nil {
+		return err
+	}
+
 	return nil
 }
 
