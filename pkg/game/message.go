@@ -1139,19 +1139,25 @@ func (m *MinimapWalk) Decode(buf *buffer.ByteBuffer, length int) (err error) {
 		m.CtrlRunning = true
 	}
 
-	buf.GetUint8()  // TODO
-	buf.GetUint8()  // TODO
-	buf.GetUint16() // TODO
+	if _, err = buf.GetUint8(); err != nil {
+		return
+	}
 
-	buf.GetUint8() // TODO
-	buf.GetUint8() // TODO
-	buf.GetUint8() // TODO
-	buf.GetUint8() // TODO
+	if _, err = buf.GetUint8(); err != nil {
+		return
+	}
 
-	buf.GetUint16() // TODO
-	buf.GetUint16() // TODO
+	if _, err = buf.GetUint16(); err != nil {
+		return
+	}
 
-	buf.GetUint8() // TODO
+	if _, err = buf.GetUint16(); err != nil {
+		return
+	}
+
+	if _, err = buf.GetUint16(); err != nil {
+		return
+	}
 
 	return
 }
