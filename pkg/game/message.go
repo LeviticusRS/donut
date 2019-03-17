@@ -390,9 +390,9 @@ func (a *Authenticate) decodeAuthenticate(buf *buffer.ByteBuffer, id uint8, leng
 	return err
 }
 
-func (*Ready) Config() message.Config { return ReadyConfig }
+func (Ready) Config() message.Config { return ReadyConfig }
 
-func (r *Ready) Encode(buf *buffer.ByteBuffer) error { return buf.PutUint64(r.AuthenticationKey) }
+func (r Ready) Encode(buf *buffer.ByteBuffer) error { return buf.PutUint64(r.AuthenticationKey) }
 
 type Success struct {
 	UserGroup uint8
@@ -401,9 +401,9 @@ type Success struct {
 	Members   bool
 }
 
-func (*Success) Config() message.Config { return SuccessConfig }
+func (Success) Config() message.Config { return SuccessConfig }
 
-func (s *Success) Encode(buf *buffer.ByteBuffer) error {
+func (s Success) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint8(s.UserGroup); err != nil {
 		return err
 	}
@@ -428,24 +428,24 @@ type InitializeScene struct {
 	PlayerPositions [2046]Position
 }
 
-func (*InitializeScene) Config() message.Config { return InitializeSceneConfig }
+func (InitializeScene) Config() message.Config { return InitializeSceneConfig }
 
-func (r *InitializeScene) Encode(buf *buffer.ByteBuffer) error {
+func (init InitializeScene) Encode(buf *buffer.ByteBuffer) error {
 	buf.StartBitAccess()
 
-	r.Position.EncodeHash(buf)
+	init.Position.EncodeHash(buf)
 
-	for i := 0; i < len(r.PlayerPositions); i++ {
-		r.PlayerPositions[i].EncodeBlockHash(buf)
+	for i := 0; i < len(init.PlayerPositions); i++ {
+		init.PlayerPositions[i].EncodeBlockHash(buf)
 	}
 
 	buf.EndBitAccess()
 
-	if err := buf.PutUint16(r.Position.ChunkX()); err != nil {
+	if err := buf.PutUint16(init.Position.ChunkX()); err != nil {
 		return err
 	}
 
-	if err := buf.PutUint16(r.Position.ChunkZ()); err != nil {
+	if err := buf.PutUint16(init.Position.ChunkZ()); err != nil {
 		return err
 	}
 
@@ -566,7 +566,7 @@ type ClientPerformanceMeasured struct {
 
 func (ClientPerformanceMeasured) Config() message.Config { return ClientPerformanceMeasuredConfig }
 
-func (c ClientPerformanceMeasured) Decode(buf *buffer.ByteBuffer, length int) (err error) {
+func (c *ClientPerformanceMeasured) Decode(buf *buffer.ByteBuffer, length int) (err error) {
 	if c.GCTime, err = buf.GetUint8(); err != nil {
 		return
 	}
@@ -613,9 +613,9 @@ type SetHud struct {
 	Id uint16
 }
 
-func (*SetHud) Config() message.Config { return SetHudConfig }
+func (SetHud) Config() message.Config { return SetHudConfig }
 
-func (s *SetHud) Encode(buf *buffer.ByteBuffer) error {
+func (s SetHud) Encode(buf *buffer.ByteBuffer) error {
 	return buf.PutUint16(s.Id)
 }
 
@@ -625,9 +625,9 @@ type GroupedEntityUpdate struct {
 	Children []message.Outbound
 }
 
-func (*GroupedEntityUpdate) Config() message.Config { return GroupedEntityUpdateConfig }
+func (GroupedEntityUpdate) Config() message.Config { return GroupedEntityUpdateConfig }
 
-func (g *GroupedEntityUpdate) Encode(buf *buffer.ByteBuffer) error {
+func (g GroupedEntityUpdate) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint8(g.Z); err != nil {
 		return err
 	}
@@ -654,9 +654,9 @@ type ModifyLabelText struct {
 	Text   string
 }
 
-func (*ModifyLabelText) Config() message.Config { return ModifyLabelTextConfig }
+func (ModifyLabelText) Config() message.Config { return ModifyLabelTextConfig }
 
-func (m *ModifyLabelText) Encode(buf *buffer.ByteBuffer) error {
+func (m ModifyLabelText) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint32(m.Parent); err != nil {
 		return err
 	}
@@ -675,9 +675,9 @@ type ModifyLabelColour struct {
 	B      int
 }
 
-func (*ModifyLabelColour) Config() message.Config { return ModifyLabelColourConfig }
+func (ModifyLabelColour) Config() message.Config { return ModifyLabelColourConfig }
 
-func (m *ModifyLabelColour) Encode(buf *buffer.ByteBuffer) error {
+func (m ModifyLabelColour) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint32(m.Parent); err != nil {
 		return err
 	}
@@ -695,7 +695,7 @@ type SetPlayerContextMenuOption struct {
 	Prioritized bool
 }
 
-func (*SetPlayerContextMenuOption) Config() message.Config { return SetPlayerContextMenuOptionConfig }
+func (SetPlayerContextMenuOption) Config() message.Config { return SetPlayerContextMenuOptionConfig }
 
 func (s SetPlayerContextMenuOption) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutBool(s.Prioritized); err != nil {
@@ -715,7 +715,7 @@ func (s SetPlayerContextMenuOption) Encode(buf *buffer.ByteBuffer) error {
 
 type ClearInputBox struct{}
 
-func (*ClearInputBox) Config() message.Config { return ClearInputBoxConfig }
+func (ClearInputBox) Config() message.Config { return ClearInputBoxConfig }
 
 func (ClearInputBox) Encode(buf *buffer.ByteBuffer) error {
 	return nil
@@ -726,7 +726,7 @@ type ToggleComponentVisibility struct {
 	Hidden bool
 }
 
-func (*ToggleComponentVisibility) Config() message.Config { return ToggleComponentVisibilityConfig }
+func (ToggleComponentVisibility) Config() message.Config { return ToggleComponentVisibilityConfig }
 
 func (t ToggleComponentVisibility) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint32(t.Parent); err != nil {
@@ -745,7 +745,7 @@ type RequestClientPerformance struct {
 	SecondKey uint32
 }
 
-func (*RequestClientPerformance) Config() message.Config { return RequestClientPerformanceConfig }
+func (RequestClientPerformance) Config() message.Config { return RequestClientPerformanceConfig }
 
 func (r RequestClientPerformance) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint32(r.FirstKey); err != nil {
@@ -782,7 +782,7 @@ func (i InvokeInterfaceScript) Identifiers() (string, error) {
 	return bldr.String(), nil
 }
 
-func (*InvokeInterfaceScript) Config() message.Config { return InvokeInterfaceScriptConfig }
+func (InvokeInterfaceScript) Config() message.Config { return InvokeInterfaceScriptConfig }
 
 func (i InvokeInterfaceScript) Encode(buf *buffer.ByteBuffer) error {
 	scriptIdentifiers, err := i.Identifiers()
@@ -822,24 +822,24 @@ type DisplaySystemMessage struct {
 	Text            string
 }
 
-func (*DisplaySystemMessage) Config() message.Config { return DisplaySystemMessageConfig }
+func (DisplaySystemMessage) Config() message.Config { return DisplaySystemMessageConfig }
 
-func (s *DisplaySystemMessage) Encode(buf *buffer.ByteBuffer) error {
-	if err := buf.PutUint8(s.Type); err != nil { // TODO encode this as a smart
+func (d DisplaySystemMessage) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint8(d.Type); err != nil { // TODO encode this as a smart
 		return nil
 	}
 
-	if err := buf.PutBool(s.InteractingWith != nil); err != nil {
+	if err := buf.PutBool(d.InteractingWith != nil); err != nil {
 		return err
 	}
 
-	if s.InteractingWith != nil {
-		if err := buf.PutCString(string(*s.InteractingWith)); err != nil {
+	if d.InteractingWith != nil {
+		if err := buf.PutCString(string(*d.InteractingWith)); err != nil {
 			return err
 		}
 	}
 
-	if err := buf.PutCString(s.Text); err != nil {
+	if err := buf.PutCString(d.Text); err != nil {
 		return err
 	}
 
@@ -850,17 +850,17 @@ type SetSystemUpdateTimer struct {
 	Ticks uint16
 }
 
-func (*SetSystemUpdateTimer) Config() message.Config { return SetSystemUpdateTimerConfig }
+func (SetSystemUpdateTimer) Config() message.Config { return SetSystemUpdateTimerConfig }
 
-func (s *SetSystemUpdateTimer) Encode(buf *buffer.ByteBuffer) error {
+func (s SetSystemUpdateTimer) Encode(buf *buffer.ByteBuffer) error {
 	return buf.PutUint16(s.Ticks)
 }
 
 type ClearPerspectiveCamera struct{}
 
-func (*ClearPerspectiveCamera) Config() message.Config { return ClearPerspectiveCameraConfig }
+func (ClearPerspectiveCamera) Config() message.Config { return ClearPerspectiveCameraConfig }
 
-func (s *ClearPerspectiveCamera) Encode(buf *buffer.ByteBuffer) error {
+func (c ClearPerspectiveCamera) Encode(buf *buffer.ByteBuffer) error {
 	return nil
 }
 
@@ -868,17 +868,17 @@ type ClearInventory struct {
 	Parent uint32
 }
 
-func (*ClearInventory) Config() message.Config { return ClearInventoryConfig }
+func (ClearInventory) Config() message.Config { return ClearInventoryConfig }
 
-func (s *ClearInventory) Encode(buf *buffer.ByteBuffer) error {
-	return buf.PutUint32(s.Parent)
+func (c ClearInventory) Encode(buf *buffer.ByteBuffer) error {
+	return buf.PutUint32(c.Parent)
 }
 
 type Logout struct{}
 
-func (*Logout) Config() message.Config { return LogoutConfig }
+func (Logout) Config() message.Config { return LogoutConfig }
 
-func (s *Logout) Encode(buf *buffer.ByteBuffer) error {
+func (l Logout) Encode(buf *buffer.ByteBuffer) error {
 	return nil
 }
 
@@ -887,14 +887,14 @@ type TargetPatch struct {
 	Z uint8
 }
 
-func (*TargetPatch) Config() message.Config { return TargetPatchConfig }
+func (TargetPatch) Config() message.Config { return TargetPatchConfig }
 
-func (s *TargetPatch) Encode(buf *buffer.ByteBuffer) error {
-	if err := buf.PutUint8(s.Z); err != nil {
+func (t TargetPatch) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint8(t.Z); err != nil {
 		return err
 	}
 
-	if err := buf.PutUint8(s.X); err != nil {
+	if err := buf.PutUint8(t.X); err != nil {
 		return err
 	}
 
@@ -906,14 +906,14 @@ type ClearPatch struct {
 	Z uint8
 }
 
-func (*ClearPatch) Config() message.Config { return ClearPatchConfig }
+func (ClearPatch) Config() message.Config { return ClearPatchConfig }
 
-func (s *ClearPatch) Encode(buf *buffer.ByteBuffer) error {
-	if err := buf.PutUint8(s.Z); err != nil {
+func (c ClearPatch) Encode(buf *buffer.ByteBuffer) error {
+	if err := buf.PutUint8(c.Z); err != nil {
 		return err
 	}
 
-	if err := buf.PutUint8(s.X); err != nil {
+	if err := buf.PutUint8(c.X); err != nil {
 		return err
 	}
 
@@ -926,9 +926,9 @@ type SetSkill struct {
 	Experience uint32
 }
 
-func (*SetSkill) Config() message.Config { return SetSkillConfig }
+func (SetSkill) Config() message.Config { return SetSkillConfig }
 
-func (s *SetSkill) Encode(buf *buffer.ByteBuffer) error {
+func (s SetSkill) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint8(s.Id); err != nil {
 		return err
 	}
@@ -949,9 +949,9 @@ type Set32BitVariable struct {
 	Value uint32
 }
 
-func (*Set32BitVariable) Config() message.Config { return Set32BitVariableConfig }
+func (Set32BitVariable) Config() message.Config { return Set32BitVariableConfig }
 
-func (s *Set32BitVariable) Encode(buf *buffer.ByteBuffer) error {
+func (s Set32BitVariable) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint16(s.Id); err != nil {
 		return err
 	}
@@ -968,9 +968,9 @@ type Set8BitVariable struct {
 	Value uint8
 }
 
-func (*Set8BitVariable) Config() message.Config { return Set8BitVariableConfig }
+func (Set8BitVariable) Config() message.Config { return Set8BitVariableConfig }
 
-func (s *Set8BitVariable) Encode(buf *buffer.ByteBuffer) error {
+func (s Set8BitVariable) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint16(s.Id); err != nil {
 		return err
 	}
@@ -984,17 +984,17 @@ func (s *Set8BitVariable) Encode(buf *buffer.ByteBuffer) error {
 
 type ClearVariables struct{}
 
-func (*ClearVariables) Config() message.Config { return ClearVariablesConfig }
+func (ClearVariables) Config() message.Config { return ClearVariablesConfig }
 
-func (s *ClearVariables) Encode(buf *buffer.ByteBuffer) error {
+func (c ClearVariables) Encode(buf *buffer.ByteBuffer) error {
 	return nil
 }
 
 type RevertVariables struct{}
 
-func (*RevertVariables) Config() message.Config { return RevertVariablesConfig }
+func (RevertVariables) Config() message.Config { return RevertVariablesConfig }
 
-func (s *RevertVariables) Encode(buf *buffer.ByteBuffer) error {
+func (c RevertVariables) Encode(buf *buffer.ByteBuffer) error {
 	return nil
 }
 
@@ -1004,9 +1004,9 @@ type OpenChildInterface struct {
 	Behavior uint8
 }
 
-func (*OpenChildInterface) Config() message.Config { return OpenChildInterfaceConfig }
+func (OpenChildInterface) Config() message.Config { return OpenChildInterfaceConfig }
 
-func (o *OpenChildInterface) Encode(buf *buffer.ByteBuffer) error {
+func (o OpenChildInterface) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint32(o.Parent); err != nil {
 		return err
 	}
@@ -1026,9 +1026,9 @@ type SetEnergy struct {
 	Percentage uint8
 }
 
-func (*SetEnergy) Config() message.Config { return SetEnergyConfig }
+func (SetEnergy) Config() message.Config { return SetEnergyConfig }
 
-func (s *SetEnergy) Encode(buf *buffer.ByteBuffer) error {
+func (s SetEnergy) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint8(s.Percentage); err != nil {
 		return err
 	}
@@ -1040,9 +1040,9 @@ type SetWeight struct {
 	Kilograms uint16
 }
 
-func (*SetWeight) Config() message.Config { return SetWeightConfig }
+func (SetWeight) Config() message.Config { return SetWeightConfig }
 
-func (s *SetWeight) Encode(buf *buffer.ByteBuffer) error {
+func (s SetWeight) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint16(s.Kilograms); err != nil {
 		return err
 	}
@@ -1054,9 +1054,9 @@ type SetMinimapState struct {
 	Id uint8
 }
 
-func (*SetMinimapState) Config() message.Config { return SetMinimapStateConfig }
+func (SetMinimapState) Config() message.Config { return SetMinimapStateConfig }
 
-func (s *SetMinimapState) Encode(buf *buffer.ByteBuffer) error {
+func (s SetMinimapState) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint8(s.Id); err != nil {
 		return err
 	}
@@ -1069,9 +1069,9 @@ type RelocateChildInterface struct {
 	ParentTo   uint32
 }
 
-func (*RelocateChildInterface) Config() message.Config { return RelocateChildInterfaceConfig }
+func (RelocateChildInterface) Config() message.Config { return RelocateChildInterfaceConfig }
 
-func (r *RelocateChildInterface) Encode(buf *buffer.ByteBuffer) error {
+func (r RelocateChildInterface) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint32(r.ParentTo); err != nil {
 		return err
 	}
@@ -1087,9 +1087,9 @@ type CloseChildInterface struct {
 	Parent uint32
 }
 
-func (*CloseChildInterface) Config() message.Config { return CloseChildInterfaceConfig }
+func (CloseChildInterface) Config() message.Config { return CloseChildInterfaceConfig }
 
-func (c *CloseChildInterface) Encode(buf *buffer.ByteBuffer) error {
+func (c CloseChildInterface) Encode(buf *buffer.ByteBuffer) error {
 	if err := buf.PutUint32(c.Parent); err != nil {
 		return err
 	}
