@@ -1,6 +1,6 @@
 package message
 
-import "github.com/sprinkle-it/donut/buffer"
+import "github.com/sprinkle-it/donut/pkg/buffer"
 
 type StreamEncoder struct {
     buffer []byte

@@ -2,7 +2,7 @@ package asset
 
 import (
     "fmt"
-    "github.com/sprinkle-it/donut/buffer"
+    "github.com/sprinkle-it/donut/pkg/buffer"
     "hash/crc32"
 )
 

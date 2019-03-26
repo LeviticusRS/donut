@@ -1,7 +1,8 @@
 package main
 
 import (
-    "github.com/sprinkle-it/donut/pkg/asset"
+	"github.com/sprinkle-it/donut/pkg/account"
+	"github.com/sprinkle-it/donut/pkg/asset"
     "github.com/sprinkle-it/donut/pkg/file"
     "github.com/sprinkle-it/donut/pkg/game"
     "github.com/sprinkle-it/donut/pkg/message"
@@ -15,91 +16,104 @@ import (
 )
 
 func main() {
-    go func() {
-        log.Println(http.ListenAndServe("localhost:6060", nil))
-    }()
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 
-    loggerConfig := zap.NewDevelopmentConfig()
-    loggerConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-    loggerConfig.DisableCaller = true
+	loggerConfig := zap.NewDevelopmentConfig()
+	loggerConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	loggerConfig.DisableCaller = true
 
-    cache, err := asset.OpenCache("cache", asset.IndexCount)
-    if err != nil {
-        log.Fatal("Failed to open cache: ", err)
-    }
+	cache, err := asset.OpenCache("cache", asset.IndexCount)
+	if err != nil {
+		log.Fatal("Failed to open cache: ", err)
+	}
 
-    storage, err := asset.NewStorage(cache)
-    if err != nil {
-        log.Fatal("Failed to create storage: ", err)
-    }
+	storage, err := asset.NewStorage(cache)
+	if err != nil {
+		log.Fatal("Failed to create storage: ", err)
+	}
 
-    fileService, err := file.New(file.Config{
-        LoggerConfig:     loggerConfig,
-        Capacity:         1000,
-        SupportedVersion: 177,
-        Provider:         storage.Get,
-        Workers:          2,
-        SessionConfig: file.SessionConfig{
-            PriorityRequestCapacity: 200,
-            PassiveRequestCapacity:  200,
-        },
-    })
+	fileService, err := file.New(file.Config{
+		LoggerConfig:     loggerConfig,
+		Capacity:         1000,
+		SupportedVersion: 177,
+		Provider:         storage.Get,
+		Workers:          2,
+		SessionConfig: file.SessionConfig{
+			PriorityRequestCapacity: 200,
+			PassiveRequestCapacity:  200,
+		},
+	})
 
-    if err != nil {
-        log.Fatal("Failed to create file service")
-    }
+	if err != nil {
+		log.Fatal("Failed to create file service")
+	}
 
-    fileService.Process()
+	fileService.Process()
 
-    gameService, err := game.New(game.Config{
-        WorldConfig: game.WorldConfig{
-            PlayerCapacity: 2048,
-            Delta:          time.Millisecond * 600,
-        },
-    })
+	accountRepository := account.NewDummyRepository()
+	game.NewAuthenticator( // TODO
+		game.SupplyAccountFromRepository(accountRepository),
+		account.MatchPasswordsBasic,
+	)
 
-    if err != nil {
-        log.Fatal("Failed to create game service")
-    }
+	gameService, err := game.New(game.Config{
+		WorldConfig: game.WorldConfig{
+			PlayerCapacity: 2048,
+			Delta:          time.Millisecond * 600,
+		},
+	})
 
-    gameService.Process()
+	if err != nil {
+		log.Fatal("Failed to create game service")
+	}
 
-    srv, err := server.New(server.Config{
-        LoggerConfig:   loggerConfig,
-        ClientCapacity: 2000,
-        ClientConfig:   server.NewDefaultClientConfig(),
-        Receivers: []server.MailReceiver{
-            {
-                Handler: fileService.HandleMail,
-                Accept: []message.Config{
-                    file.PassiveRequestConfig,
-                    file.PriorityRequestConfig,
-                    file.OnlineStatusUpdateConfig,
-                    file.OfflineStatusUpdateConfig,
-                    file.HandshakeConfig,
-                },
-            },
-            {
-                Handler: gameService.HandleMail,
-                Accept: []message.Config{
-                    game.HandshakeConfig,
-                    game.AuthenticateConfig,
-                    game.WindowUpdateConfig,
-                    game.HeartbeatConfig,
-                    game.SceneRebuiltConfig,
-                    game.FocusChangedConfig,
-                    game.KeyTypedConfig,
-                    game.CameraRotatedConfig,
-                },
-            },
-        },
-    })
+	gameService.Process()
 
-    if err != nil {
-        log.Fatal("Failed to create server", err)
-    }
+	srv, err := server.New(server.Config{
+		LoggerConfig:   loggerConfig,
+		ClientCapacity: 2000,
+		ClientConfig:   server.NewDefaultClientConfig(),
+		Receivers: []server.MailReceiver{
+			{
+				Handler: fileService.HandleMail,
+				Accept: []message.Config{
+					file.PassiveRequestConfig,
+					file.PriorityRequestConfig,
+					file.OnlineStatusUpdateConfig,
+					file.OfflineStatusUpdateConfig,
+					file.HandshakeConfig,
+				},
+			},
+			{
+				Handler: gameService.HandleMail,
+				Accept: []message.Config{
+					game.HandshakeConfig,
+					game.NewLoginConfig,
+					game.WindowUpdateConfig,
+					game.HeartbeatConfig,
+					game.ClientPerformanceMeasuredConfig,
+					game.MouseActivityRecordedConfig,
+					game.MouseClickedConfig,
+					game.MinimapWalkConfig,
+					game.WalkHereConfig,
+					game.ExamineObjectConfig,
+					game.ButtonPressedConfig,
+					game.SceneRebuiltConfig,
+					game.FocusChangedConfig,
+					game.KeyTypedConfig,
+					game.CameraRotatedConfig,
+				},
+			},
+		},
+	})
 
-    if err := srv.Listen(43594); err != nil {
-        log.Fatal("Failed to listen to server port", err)
-    }
+	if err != nil {
+		log.Fatal("Failed to create server", err)
+	}
+
+	if err := srv.Listen(43594); err != nil {
+		log.Fatal("Failed to listen to server port", err)
+	}
 }

@@ -1,7 +1,7 @@
 package sync
 
 import (
-    "github.com/sprinkle-it/donut/buffer"
+    "github.com/sprinkle-it/donut/pkg/buffer"
     "github.com/sprinkle-it/donut/pkg/message"
 )
 

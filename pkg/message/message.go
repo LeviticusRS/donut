@@ -1,7 +1,7 @@
 package message
 
 import (
-    "github.com/sprinkle-it/donut/buffer"
+    "github.com/sprinkle-it/donut/pkg/buffer"
 )
 
 func Singleton(msg Message) func() Message { return func() Message { return msg } }

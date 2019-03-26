@@ -6,7 +6,7 @@ import (
     "encoding/binary"
     "fmt"
     "github.com/dsnet/compress/bzip2"
-    "github.com/sprinkle-it/donut/buffer"
+    "github.com/sprinkle-it/donut/pkg/buffer"
     "io"
 )
 

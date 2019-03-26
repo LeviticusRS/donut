@@ -5,13 +5,18 @@ import (
 )
 
 type Service struct {
-    capacity int
-    commands chan command
-    world    World
+	capacity int
+	sessions map[uint64]*Session
+
+	authenticator Authenticator
+
+	commands chan command
+
+	world World
 }
 
 func New(config Config) (*Service, error) {
-    return config.Build()
+	return config.Build()
 }
 
 func (s *Service) execute(cmd command) { s.commands <- cmd }
@@ -31,7 +36,7 @@ func (s *Service) HandleMail(mail server.Mail) {
 }
 
 type command interface {
-    execute(s *Service)
+	execute(s *Service)
 }
 
 type handleMessage struct {
@@ -43,7 +48,16 @@ func (c handleMessage) execute(s *Service) {
     switch c.mail.Message.(type) {
     case *handshake:
         _ = source.SendNow(&Ready{})
-    case *Authenticate:
+    case *NewLogin:
         s.world.Register(source, Profile{})
     }
+}
+
+type unregisterSession struct {
+	cli *server.Client
+}
+
+func (cmd unregisterSession) execute(s *Service) {
+	delete(s.sessions, cmd.cli.Id())
+	cmd.cli.Info("Unregistered game session")
 }

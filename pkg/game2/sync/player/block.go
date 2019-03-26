@@ -1,6 +1,6 @@
 package player
 
-import "github.com/sprinkle-it/donut/buffer"
+import "github.com/sprinkle-it/donut/pkg/buffer"
 
 type Walk struct {
     Direction uint8
