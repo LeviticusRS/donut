@@ -1,10 +1,34 @@
 package message
 
 import (
-    "github.com/sprinkle-it/donut/pkg/buffer"
+    "github.com/sprinkle-it/donut/buffer"
 )
 
 func Singleton(msg Message) func() Message { return func() Message { return msg } }
+
+type Size int
+
+const (
+    SizeVariableByte  = -1
+    SizeVariableShort = -2
+)
+
+func (s Size) encodedLength() int {
+    switch s {
+    case SizeVariableByte:
+        return 1
+    case SizeVariableShort:
+        return 2
+    default:
+        return 0
+    }
+}
+
+type Config struct {
+    Id   uint8
+    Size Size
+    New  func() Message
+}
 
 type Message interface {
     Config() Config

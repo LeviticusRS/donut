@@ -2,18 +2,45 @@ package server
 
 import (
     "fmt"
-    "github.com/sprinkle-it/donut/pkg/client"
     "go.uber.org/zap"
     "net"
 )
+
+type Config struct {
+    ClientCapacity int
+    LoggerConfig   zap.Config
+    ClientConfig   ClientConfig
+    Receivers      []MailReceiver
+}
+
+func (cfg Config) Build() (*Server, error) {
+    logger, err := cfg.LoggerConfig.Build()
+    if err != nil {
+        return nil, err
+    }
+
+    router, err := NewMailRouter(cfg.Receivers)
+    if err != nil {
+        return nil, err
+    }
+
+    return &Server{
+        logger:         logger,
+        clientCapacity: cfg.ClientCapacity,
+        clientFactory:  cfg.ClientConfig.Build,
+        clients:        make(map[uint64]*Client, cfg.ClientCapacity),
+        router:         router,
+        commands:       make(chan command),
+    }, nil
+}
 
 type Server struct {
     logger *zap.Logger
 
     clientCapacity int
-    clientFactory  client.Factory
-    clients        map[uint64]*client.Client
-    router         client.MailRouter
+    clientFactory  Factory
+    clients        map[uint64]*Client
+    router         MailRouter
 
     commands chan command
 }
@@ -75,7 +102,7 @@ func (cmd acceptConnection) Execute(server *Server) {
     server.clients[cli.Id()] = cli
 
     // Register a callback that will unregister the client from the server when it is closed.
-    cli.OnClosed(func(cli *client.Client) {
+    cli.OnClosed(func(cli *Client) {
         server.execute(unregisterClient{client: cli,})
     })
 
@@ -89,7 +116,7 @@ func (cmd acceptConnection) Execute(server *Server) {
 
 // Unregisters a client from the server freeing the reference in the server.
 type unregisterClient struct {
-    client *client.Client
+    client *Client
 }
 
 func (cmd unregisterClient) Execute(server *Server) {

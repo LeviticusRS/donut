@@ -2,7 +2,7 @@ package message
 
 import (
     "fmt"
-    "github.com/sprinkle-it/donut/pkg/buffer"
+    "github.com/sprinkle-it/donut/buffer"
 )
 
 type StreamDecoderState int

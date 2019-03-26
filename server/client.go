@@ -1,8 +1,8 @@
-package client
+package server
 
 import (
     "errors"
-    "github.com/sprinkle-it/donut/pkg/buffer"
+    "github.com/sprinkle-it/donut/buffer"
     "github.com/sprinkle-it/donut/pkg/message"
     "go.uber.org/zap"
     "net"
@@ -11,15 +11,12 @@ import (
 )
 
 var (
-    ErrNotActive = errors.New("client: this operation could not be performed because the client is not active")
-    ErrClosed    = errors.New("client: this operation could not be performed because the client is closed")
+    ErrNotActive = errors.New("server: this operation could not be performed because the client is not active")
+    ErrClosed    = errors.New("server: this operation could not be performed because the client is closed")
 )
 
 // Creates a new client for the given connection and router.
 type Factory func(net.Conn, *zap.Logger, MailRouter) *Client
-
-// Type declaration for client callback functions.
-type Callback func(*Client)
 
 // Generates a identifier for a client. Implementations of this function type
 // must generate an identifier that is at least unique for the application context
@@ -48,6 +45,40 @@ func (w *FlushWriter) Write(b []byte) error {
     }
     w.counter += len(b)
     return w.Client.Write(b)
+}
+
+type ClientConfig struct {
+    GenerateIdentifier IdentifierGenerator
+    InputCapacity      int
+    OutputCapacity     int
+    MessageCapacity    int
+}
+
+func NewDefaultClientConfig() ClientConfig {
+    return ClientConfig{
+        GenerateIdentifier: IncrementalGenerator(0),
+        InputCapacity:      10240,
+        OutputCapacity:     10240,
+        MessageCapacity:    1000,
+    }
+}
+
+// Builds a new client from the configuration and given connection and router.
+func (c *ClientConfig) Build(connection net.Conn, logger *zap.Logger, router MailRouter) *Client {
+    return &Client{
+        id:             c.GenerateIdentifier(),
+        connection:     connection,
+        logger:         logger,
+        input:          buffer.NewRingBuffer(c.InputCapacity),
+        output:         buffer.NewRingBuffer(c.OutputCapacity),
+        outputCommands: make(chan outputCommand),
+        decoder:        message.NewStreamDecoder(router.accepted, c.InputCapacity),
+        encoder:        message.NewStreamEncoder(c.OutputCapacity),
+        messages:       make(chan message.Message, c.MessageCapacity),
+        router:         router,
+        mutex:          sync.Mutex{},
+        quit:           make(chan struct{}),
+    }
 }
 
 // Type declaration for writer commands.
@@ -366,7 +397,7 @@ func (c *Client) check() error {
 }
 
 // Spawns a go routine that will wait for the client to close and then call the given function.
-func (c *Client) OnClosed(callback Callback) {
+func (c *Client) OnClosed(callback func(*Client)) {
     go func() {
         <-c.quit
         callback(c)

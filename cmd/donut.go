@@ -2,11 +2,10 @@ package main
 
 import (
     "github.com/sprinkle-it/donut/pkg/asset"
-    "github.com/sprinkle-it/donut/pkg/client"
     "github.com/sprinkle-it/donut/pkg/file"
     "github.com/sprinkle-it/donut/pkg/game"
     "github.com/sprinkle-it/donut/pkg/message"
-    "github.com/sprinkle-it/donut/pkg/server"
+    "github.com/sprinkle-it/donut/server"
     "go.uber.org/zap"
     "go.uber.org/zap/zapcore"
     "log"
@@ -68,8 +67,8 @@ func main() {
     srv, err := server.New(server.Config{
         LoggerConfig:   loggerConfig,
         ClientCapacity: 2000,
-        ClientConfig:   client.NewDefaultConfig(),
-        Receivers: []client.MailReceiver{
+        ClientConfig:   server.NewDefaultClientConfig(),
+        Receivers: []server.MailReceiver{
             {
                 Handler: fileService.HandleMail,
                 Accept: []message.Config{

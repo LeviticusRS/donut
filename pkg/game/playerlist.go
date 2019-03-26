@@ -1,6 +1,6 @@
 package game
 
-import "github.com/sprinkle-it/donut/pkg/client"
+import "github.com/sprinkle-it/donut/server"
 
 type PlayerList struct {
     new    PlayerFactory
@@ -23,7 +23,7 @@ func NewPlayerList(capacity int, new PlayerFactory) PlayerList {
     }
 }
 
-func (l *PlayerList) New(cli *client.Client) (*Player, bool) {
+func (l *PlayerList) New(cli *server.Client) (*Player, bool) {
     if len(l.unused) == 0 {
         return nil, false
     }

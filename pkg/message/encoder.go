@@ -1,6 +1,6 @@
 package message
 
-import "github.com/sprinkle-it/donut/pkg/buffer"
+import "github.com/sprinkle-it/donut/buffer"
 
 type StreamEncoder struct {
     buffer []byte
@@ -23,7 +23,7 @@ func (e *StreamEncoder) Encode(msg Outbound, output *buffer.RingBuffer) error {
     // Skip over where we need to write the length of the packet. The number of bytes that dictate the length
     // is determined by the size of the packet.
     size := msg.Config().Size
-    if err := buf.Skip(size.EncodedLength()); err != nil {
+    if err := buf.Skip(size.encodedLength()); err != nil {
         return err
     }
 
@@ -33,7 +33,7 @@ func (e *StreamEncoder) Encode(msg Outbound, output *buffer.RingBuffer) error {
 
     end := buf.Offset
 
-    length := end - start - size.EncodedLength()
+    length := end - start - size.encodedLength()
 
     // Move back to the start of the message and write the length.
     buf.Offset = start

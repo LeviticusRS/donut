@@ -1,8 +1,8 @@
 package file
 
 import (
-    "github.com/sprinkle-it/donut/pkg/buffer"
-    "github.com/sprinkle-it/donut/pkg/client"
+    "github.com/sprinkle-it/donut/buffer"
+    "github.com/sprinkle-it/donut/server"
 )
 
 var (
@@ -42,7 +42,7 @@ func (j Job) Execute(worker *Worker) {
         return
     }
 
-    writer := client.FlushWriter{Client: j.session.Client}
+    writer := server.FlushWriter{Client: j.session.Client}
 
     buf := buffer.ByteBuffer{Bytes: worker.buffer[:]}
 

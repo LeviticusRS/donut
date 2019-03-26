@@ -1,7 +1,7 @@
 package game
 
 import (
-    "github.com/sprinkle-it/donut/pkg/client"
+    "github.com/sprinkle-it/donut/server"
 )
 
 type Service struct {
@@ -26,7 +26,7 @@ func (s *Service) Process() {
     }()
 }
 
-func (s *Service) HandleMail(mail client.Mail) {
+func (s *Service) HandleMail(mail server.Mail) {
     s.execute(handleMessage{mail: mail})
 }
 
@@ -35,7 +35,7 @@ type command interface {
 }
 
 type handleMessage struct {
-    mail client.Mail
+    mail server.Mail
 }
 
 func (c handleMessage) execute(s *Service) {

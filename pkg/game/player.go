@@ -1,15 +1,15 @@
 package game
 
 import (
-    "github.com/sprinkle-it/donut/pkg/client"
+    "github.com/sprinkle-it/donut/server"
 )
 
-type PlayerFactory func(*client.Client, uint16) *Player
+type PlayerFactory func(*server.Client, uint16) *Player
 
 type PlayerConfig struct {
 }
 
-func (cfg PlayerConfig) Build(client *client.Client, id uint16) *Player {
+func (cfg PlayerConfig) Build(client *server.Client, id uint16) *Player {
     return &Player{
         Client:   client,
         id:       id,
@@ -19,7 +19,7 @@ func (cfg PlayerConfig) Build(client *client.Client, id uint16) *Player {
 }
 
 type Player struct {
-    *client.Client
+    *server.Client
     id       uint16
     position Position
     sync     PlayerSync

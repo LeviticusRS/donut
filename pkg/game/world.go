@@ -1,7 +1,7 @@
 package game
 
 import (
-    "github.com/sprinkle-it/donut/pkg/client"
+    "github.com/sprinkle-it/donut/server"
     "github.com/sprinkle-it/donut/pkg/status"
     "time"
 )
@@ -34,11 +34,11 @@ type World struct {
 }
 
 type CreatePlayer struct {
-    Source  *client.Client
+    Source  *server.Client
     Profile Profile
 }
 
-func (w *World) Register(cli *client.Client, profile Profile) {
+func (w *World) Register(cli *server.Client, profile Profile) {
     w.register <- CreatePlayer{Source: cli, Profile: profile}
 }
 

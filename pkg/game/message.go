@@ -1,7 +1,7 @@
 package game
 
 import (
-    "github.com/sprinkle-it/donut/pkg/buffer"
+    "github.com/sprinkle-it/donut/buffer"
     "github.com/sprinkle-it/donut/pkg/message"
 )
 
@@ -159,7 +159,7 @@ func (r *InitializeScene) Encode(buf *buffer.ByteBuffer) error {
         r.PlayerPositions[i].EncodeBlockHash(buf)
     }
 
-    buf.EndBitAccess()
+    buf.FinishBitAccess()
 
     if err := buf.PutUint16(r.Position.ChunkX()); err != nil {
         return err

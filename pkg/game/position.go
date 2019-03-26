@@ -1,6 +1,6 @@
 package game
 
-import "github.com/sprinkle-it/donut/pkg/buffer"
+import "github.com/sprinkle-it/donut/buffer"
 
 type Position struct {
     Level uint8

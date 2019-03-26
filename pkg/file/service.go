@@ -2,7 +2,7 @@ package file
 
 import (
     "errors"
-    "github.com/sprinkle-it/donut/pkg/client"
+    "github.com/sprinkle-it/donut/server"
     "github.com/sprinkle-it/donut/pkg/status"
     "go.uber.org/zap"
 )
@@ -54,7 +54,7 @@ func (s *Service) Process() {
     }()
 }
 
-func (s *Service) HandleMail(mail client.Mail) {
+func (s *Service) HandleMail(mail server.Mail) {
     s.execute(handleMessage{mail: mail})
 }
 
@@ -63,7 +63,7 @@ type command interface {
 }
 
 type handleMessage struct {
-    mail client.Mail
+    mail server.Mail
 }
 
 func (c handleMessage) execute(s *Service) {
@@ -83,7 +83,7 @@ func (c handleMessage) execute(s *Service) {
         session := s.newSession(source, s.workers)
         s.sessions[source.Id()] = session
 
-        session.OnClosed(func(cli *client.Client) { s.execute(unregisterSession{cli: cli}) })
+        session.OnClosed(func(cli *server.Client) { s.execute(unregisterSession{cli: cli}) })
         session.Process()
 
         session.Info("Registered client to file service")
@@ -107,7 +107,7 @@ func (c handleMessage) execute(s *Service) {
 }
 
 type unregisterSession struct {
-    cli *client.Client
+    cli *server.Client
 }
 
 func (cmd unregisterSession) execute(service *Service) {

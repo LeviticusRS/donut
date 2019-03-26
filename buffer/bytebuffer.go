@@ -191,7 +191,7 @@ func (b *ByteBuffer) StartBitAccess() {
     b.BitOffset = b.Offset * 8
 }
 
-func (b *ByteBuffer) EndBitAccess() {
+func (b *ByteBuffer) FinishBitAccess() {
     b.Offset = (b.BitOffset + 7) / 8
 }
 

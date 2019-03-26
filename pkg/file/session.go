@@ -2,17 +2,17 @@ package file
 
 import (
     "errors"
-    "github.com/sprinkle-it/donut/pkg/client"
+    "github.com/sprinkle-it/donut/server"
 )
 
-type SessionFactory func(*client.Client, WorkerPool) *Session
+type SessionFactory func(*server.Client, WorkerPool) *Session
 
 type SessionConfig struct {
     PriorityRequestCapacity int
     PassiveRequestCapacity  int
 }
 
-func (cfg SessionConfig) Build(cli *client.Client, workers WorkerPool) *Session {
+func (cfg SessionConfig) Build(cli *server.Client, workers WorkerPool) *Session {
     return &Session{
         Client:   cli,
         workers:  workers,
@@ -26,7 +26,7 @@ func (cfg SessionConfig) Build(cli *client.Client, workers WorkerPool) *Session 
 // can make, priority requests and passive requests. Priority requests are expected to be served before passive
 // requests.
 type Session struct {
-    *client.Client
+    *server.Client
 
     // The pool of workers that the session can utilize to submit jobs.
     workers WorkerPool
@@ -101,7 +101,7 @@ func (s *Session) submit(request Request) {
 
         select {
         case err := <-s.done:
-            if err != nil && err != client.ErrClosed {
+            if err != nil && err != server.ErrClosed {
                 s.Fatal(err)
             }
         }

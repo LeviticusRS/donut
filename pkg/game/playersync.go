@@ -1,7 +1,7 @@
 package game
 
 import (
-    "github.com/sprinkle-it/donut/pkg/buffer"
+    "github.com/sprinkle-it/donut/buffer"
     "github.com/sprinkle-it/donut/pkg/message"
 )
 
@@ -159,7 +159,7 @@ func (l BlockList) Encode(buf *buffer.ByteBuffer) error {
         }
     }
 
-    buf.EndBitAccess()
+    buf.FinishBitAccess()
 
     return nil
 }
