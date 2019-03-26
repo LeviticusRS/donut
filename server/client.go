@@ -2,8 +2,8 @@ package server
 
 import (
     "errors"
-    "github.com/sprinkle-it/donut/pkg/buffer"
-    "github.com/sprinkle-it/donut/pkg/message"
+    "github.com/sprinkle-it/donut/buffer"
+    "github.com/sprinkle-it/donut/message"
     "go.uber.org/zap"
     "net"
     "sync"

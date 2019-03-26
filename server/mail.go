@@ -2,7 +2,7 @@ package server
 
 import (
     "errors"
-    "github.com/sprinkle-it/donut/pkg/message"
+    "github.com/sprinkle-it/donut/message"
 )
 
 // Type declaration for handlers that execute logic for received mail. Implementations of this type should never
@@ -35,7 +35,7 @@ func NewMailRouter(receivers []MailReceiver) (MailRouter, error) {
     for _, receiver := range receivers {
         for _, descriptor := range receiver.Accept {
             if _, ok := router.handlers[descriptor.Id]; ok {
-                return MailRouter{}, errors.New("client: multiple receivers cannot accept the same message")
+                return MailRouter{}, errors.New("server: multiple receivers cannot accept the same message")
             }
             router.handlers[descriptor.Id] = receiver.Handler
             router.accepted[descriptor.Id] = descriptor

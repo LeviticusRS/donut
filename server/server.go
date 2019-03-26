@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-    ClientCapacity int
     LoggerConfig   zap.Config
+    ClientCapacity int
     ClientConfig   ClientConfig
     Receivers      []MailReceiver
 }
